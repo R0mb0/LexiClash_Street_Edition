@@ -756,14 +756,14 @@
 
             // Correction Modal Logic
             const inpWord = document.getElementById('input-word');
-            const btnYes = document.getElementById('btn-valid-yes');
-            const btnNo = document.getElementById('btn-valid-no');
+            //const btnYes = document.getElementById('btn-valid-yes');
+            //const btnNo = document.getElementById('btn-valid-no');
             const dispScore = document.getElementById('display-score');
             const errDiv = document.getElementById('word-error');
             const btnConfirm = document.getElementById('btn-confirm-score');
             
             let currentCalculatedScore = 0;
-            let isValidToggle = true;
+            //let isValidToggle = true;
 
             function updateCorrectionLive() {
                 if(!inpWord) return;
@@ -794,8 +794,8 @@
             }
 
             if(inpWord) inpWord.oninput = updateCorrectionLive;
-            if(btnYes) btnYes.onclick = () => { isValidToggle=true; btnYes.style.opacity=1; btnNo.style.opacity=0.5; updateCorrectionLive(); };
-            if(btnNo) btnNo.onclick = () => { isValidToggle=false; btnNo.style.opacity=1; btnYes.style.opacity=0.5; updateCorrectionLive(); };
+            //if(btnYes) btnYes.onclick = () => { isValidToggle=true; btnYes.style.opacity=1; btnNo.style.opacity=0.5; updateCorrectionLive(); };
+            //if(btnNo) btnNo.onclick = () => { isValidToggle=false; btnNo.style.opacity=1; btnYes.style.opacity=0.5; updateCorrectionLive(); };
             
             if(btnConfirm) {
                 btnConfirm.onclick = () => {
