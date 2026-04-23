@@ -227,6 +227,15 @@
             width: 90%; max-width: 600px; text-align: center;
         }
 
+        /* Modificatore per l'overlay di correzione */
+        .correction-overlay {
+            background: rgba(0,0,0, 0.2); 
+            backdrop-filter: none; 
+            -webkit-backdrop-filter: none;
+            align-items: flex-end; 
+            padding-bottom: 5vh; 
+        }
+
         /* Utilities */
         .flex-center { display: flex; justify-content: center; align-items: center; gap: 1rem; flex-wrap: wrap; }
         .mt-4 { margin-top: 1rem; } .mb-4 { margin-bottom: 1rem; }
@@ -286,7 +295,8 @@
                 errNoLetters: "Attenzione: Usa solo le lettere presenti!",
                 points: "pt",
                 round: "Round",
-                target: "Obiettivo:"
+                target: "Obiettivo:",
+                hardReset: "Cancella tutti i dati salvati"
             },
             en: {
                 title: "LexiClash: Street Edition",
@@ -324,7 +334,8 @@
                 errNoLetters: "Warning: Use only available letters!",
                 points: "pts",
                 round: "Round",
-                target: "Target:"
+                target: "Target:",
+                hardReset: "Delete all saved data"
             }
         };
 
@@ -487,6 +498,9 @@
                     <div class="flex-center" style="flex-direction: column;">
                         ${hasSave ? `<button id="btn-resume" class="btn-primary w-full mb-4 text-2xl">${t.resume}</button>` : ''}
                         <button id="btn-new" class="btn-warning w-full text-2xl">${t.newGame}</button>
+                        
+                        <!-- NUOVO: Pulsante Hard Reset (visibile solo se c'è un salvataggio) -->
+                        ${hasSave ? `<a href="#" id="btn-hard-reset" class="mt-8 font-bold" style="color: var(--danger); text-decoration: underline;">${t.hardReset}</a>` : ''}
                     </div>
                 </div>
             `;
@@ -525,7 +539,7 @@
                     <label><b>${t.timerDur}</b></label>
                         <input type="number" id="sel-time" class="mt-4" value="${state.settings.timerDuration}" step="1">
                     </div>
-                    <div style="height:20px"></div>
+                    <!-------------------------->
                     <div class="mb-8">
                         <label><b>${t.ruleToggle}</b></label>
                         <select id="sel-rule" class="mt-4">
@@ -622,10 +636,13 @@
             }, 100);
 
             return `
-                ${viewGameLayout()} 
-                <div class="modal-overlay">
-                    <div class="glass modal-content">
-                        <h2>${t.correctionPhase}</h2>
+                ${viewGameLayout()}
+                <div class="modal-overlay correction-overlay">
+                <div class="glass modal-content">
+                    <h2>${t.correctionPhase}</h2> 
+                    
+                        <div class="modal-overlay">
+
                         <h3 style="color:${p.color}">${t.judging} ${p.name}</h3>
                         
                         <div class="mt-4">
@@ -699,6 +716,17 @@
             if(btnResume) btnResume.onclick = () => { state.load(); render(); };
             const btnNew = document.getElementById('btn-new');
             if(btnNew) btnNew.onclick = () => { state.reset(); state.turn.phase = 'REGISTRATION'; render(); };
+
+            // NUOVO: Evento Hard Reset
+            const btnHardReset = document.getElementById('btn-hard-reset');
+            if(btnHardReset) {
+                btnHardReset.onclick = (e) => {
+                    e.preventDefault(); 
+                    localStorage.removeItem(STORAGE_KEY); 
+                    state.reset(); 
+                    render(); 
+                };
+            }
 
             // Registration
             document.querySelectorAll('.input-name').forEach(inp => {
