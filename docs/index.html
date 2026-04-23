@@ -229,11 +229,14 @@
 
         /* Modificatore per l'overlay di correzione */
         .correction-overlay {
-            background: rgba(0,0,0, 0.2); 
-            backdrop-filter: none; 
+            position: relative; 
+            height: auto; 
+            background: transparent; 
+            backdrop-filter: none;
             -webkit-backdrop-filter: none;
-            align-items: flex-end; 
-            padding-bottom: 5vh; 
+            padding-top: 2rem; 
+            padding-bottom: 4rem;
+            z-index: 10;
         }
 
         /* Utilities */
@@ -547,7 +550,7 @@
                             <option value="chaos" ${state.settings.rule==='chaos'?'selected':''}>${t.ruleChaos}</option>
                         </select>
                     </div>
-                    <button id="btn-start-game" class="btn-success w-full text-2xl">${t.start}</button>
+                    <button id="btn-start-game" class="btn-success w-full text-2xl" style="margin-top: 2rem;">${t.start}</button>
                 </div>
             `;
         }
