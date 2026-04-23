@@ -174,11 +174,12 @@
             padding: 1rem; border-radius: 1rem; background: var(--card-bg);
             border-left: 8px solid; transition: all 0.3s;
             box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+            overflow: hidden;
         }
         .player-badge.active {
             transform: scale(1.05);
             box-shadow: var(--glow);
-            border-color: var(--accent-color) !important;
+            /* ELIMINA la riga: border-color: var(--accent-color) !important; */
             animation: pulse-glow 2s infinite;
         }
         .player-badge .name { font-weight: bold; font-size: 1.2rem; }
@@ -517,21 +518,14 @@
                 <div class="glass max-w-xl mx-auto mt-10">
                     <h2>${t.settingsTitle}</h2>
                     <div class="mb-4">
-                        <label><b>${t.winThreshold}</b></label>
-                        <select id="sel-win" class="mt-4">
-                            <option value="100" ${state.settings.winThreshold==100?'selected':''}>100 pts</option>
-                            <option value="200" ${state.settings.winThreshold==200?'selected':''}>200 pts</option>
-                            <option value="500" ${state.settings.winThreshold==500?'selected':''}>500 pts</option>
-                        </select>
+                    <label><b>${t.winThreshold}</b></label>
+                        <input type="number" id="sel-win" class="mt-4" value="${state.settings.winThreshold}" step="1">
                     </div>
                     <div class="mb-4">
-                        <label><b>${t.timerDur}</b></label>
-                        <select id="sel-time" class="mt-4">
-                            <option value="30" ${state.settings.timerDuration==30?'selected':''}>30s</option>
-                            <option value="45" ${state.settings.timerDuration==45?'selected':''}>45s</option>
-                            <option value="60" ${state.settings.timerDuration==60?'selected':''}>60s</option>
-                        </select>
+                    <label><b>${t.timerDur}</b></label>
+                        <input type="number" id="sel-time" class="mt-4" value="${state.settings.timerDuration}" step="1">
                     </div>
+                    <div style="height:20px"></div>
                     <div class="mb-8">
                         <label><b>${t.ruleToggle}</b></label>
                         <select id="sel-rule" class="mt-4">
@@ -640,13 +634,13 @@
                             <div id="word-error" class="text-danger mt-2 font-bold hidden">${t.errNoLetters}</div>
                         </div>
 
-                        <div class="mt-8 mb-4">
-                            <label><b>${t.validQ}</b></label>
-                            <div class="flex-center mt-4">
-                                <button id="btn-valid-yes" class="btn-success" style="opacity:1;">${t.yes}</button>
-                                <button id="btn-valid-no" class="btn-danger" style="opacity:0.5;">${t.no}</button>
-                            </div>
-                        </div>
+                        <!-- <div class="mt-8 mb-4"> -->
+                        <!--    <label><b>${t.validQ}</b></label> -->
+                        <!--    <div class="flex-center mt-4"> -->
+                        <!--        <button id="btn-valid-yes" class="btn-success" style="opacity:1;">${t.yes}</button> -->
+                        <!--        <button id="btn-valid-no" class="btn-danger" style="opacity:0.5;">${t.no}</button> -->
+                        <!--    </div> -->
+                        <!-- </div> -->
 
                         <div class="text-4xl mt-8 mb-8">
                             ${t.calcScore} <span id="display-score" style="font-weight:900; color:var(--accent-color)">0</span> ${t.points}
