@@ -657,35 +657,39 @@
             `;
         }
 
-        function viewCorrection() {
+       function viewCorrection() {
             const p = state.players[state.tempCorrectionIndex];
             
-            // Flip cards to reveal values
+            // 1. Gira le carte per mostrare i punteggi
             setTimeout(() => {
                 document.querySelectorAll('.letter-card').forEach(c => c.classList.add('flipped'));
             }, 100);
-
-           return `
+        
+            // 2. Ritorna il layout del gioco (carte) E POI il nostro nuovo pannello!
+            return `
+                ${viewGameLayout()} 
+                
                 <div class="correction-overlay">
-                    <div class="modal-content animate-pop p-5">
-                        <h3 class="text-xl font-bold text-accent mb-1">${p.name}: ${t('correction_title')}</h3>
-                        <p class="text-sm opacity-75 mb-4">${t('enter_word')}</p>
+                    <div class="modal-content animate-pop" style="padding: 1.5rem;">
+                        <h3 class="text-accent mb-2">${p.name}: ${t.correction_title}</h3>
+                        <p style="margin-bottom: 1rem;">${t.enter_word}</p>
                         
                         <input type="text" id="input-word" 
-                            class="w-full bg-white/50 dark:bg-black/20 border-2 border-accent/30 rounded-xl p-3 text-center text-2xl font-bold tracking-widest uppercase focus:border-accent outline-none mb-2"
-                            placeholder="..." autofocus>
+                            class="text-center text-4xl mb-4" 
+                            style="text-transform: uppercase; font-weight: bold; letter-spacing: 2px;" 
+                            autocomplete="off" autofocus>
                         
-                        <div id="word-error" class="text-danger text-xs font-bold mb-3 hidden text-center">
-                             ⚠️ ${t('invalid_word')}
+                        <div id="word-error" class="text-danger font-bold mb-4 hidden">
+                             ⚠️ ${t.invalid_word}
                         </div>
         
-                        <div class="flex justify-between items-center bg-accent/10 rounded-xl p-4 mb-4">
-                            <span class="text-sm font-medium">${t('score_est')}</span>
-                            <span id="display-score" class="text-2xl font-black text-accent">0</span>
+                        <div class="flex-center mt-4 mb-4" style="background: rgba(0,0,0,0.05); padding: 1rem; border-radius: 1rem; justify-content: space-between;">
+                            <span style="font-weight: bold;">${t.score_est}</span>
+                            <span id="display-score" style="font-size: 2rem; font-weight: 900; color: var(--accent-color);">0</span>
                         </div>
         
-                        <button id="btn-confirm-score" class="w-full bg-accent text-white font-bold py-4 rounded-xl shadow-lg active:scale-95 transition-all">
-                            ${t('confirm_word')}
+                        <button id="btn-confirm-score" class="btn-primary w-full text-2xl mt-4">
+                            ${t.confirm_word}
                         </button>
                     </div>
                 </div>
