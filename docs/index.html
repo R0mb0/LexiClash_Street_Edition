@@ -230,26 +230,29 @@
         .correction-overlay {
             position: fixed !important;
             bottom: 0 !important;
+            top: auto !important; /* Rimuove il top:0 che lo bloccava in alto */
             left: 50% !important;
-            transform: translateX(-50%) !important; /* Centratura millimetrica */
+            transform: translateX(-50%) !important; /* Lo centra perfettamente nel binario delle lettere */
             width: 100% !important;
-            max-width: 500px !important; /* Uguale al tuo .app-container */
+            max-width: 500px !important; /* Stessa larghezza del tuo .app-container */
             height: auto !important;
-            background: transparent !important; /* Non oscura lo sfondo */
+            background: transparent !important; /* Rimuove lo sfondo nero che oscurava tutto */
             display: flex !important;
             justify-content: center !important;
-            padding: 15px !important;
+            align-items: flex-end !important;
+            z-index: 9999 !important;
+            padding: 0 15px 25px 15px !important; /* Distacco dal fondo dello schermo */
             box-sizing: border-box !important;
-            z-index: 10000 !important;
-            pointer-events: none; /* Permette di toccare le lettere nello spazio vuoto */
+            backdrop-filter: none !important; /* Rimuove il blur dallo schermo intero */
+            pointer-events: none !important; /* Permette di cliccare le lettere "dietro" negli spazi vuoti */
         }
         
         /* Il pannello bianco vero e proprio */
         .correction-overlay .modal-content {
-            pointer-events: auto !important; /* Il pannello invece riceve i click */
-            background: #ffffff !important; /* Sfondo solido */
-            border-radius: 30px !important;
-            box-shadow: 0 -10px 40px rgba(0,0,0,0.15) !important;
+            pointer-events: auto !important; 
+            width: 100% !important;
+            margin: 0 !important;
+            box-shadow: 0 -10px 30px rgba(0,0,0,0.2) !important;
             width: 100% !important;
             border: 1px solid rgba(0,0,0,0.05) !important;
             padding: 1.5rem !important;
@@ -663,11 +666,11 @@
        function viewCorrection() {
             const p = state.players[state.tempCorrectionIndex];
             
-            // Gira le carte dopo un mini delay
             setTimeout(() => {
                 document.querySelectorAll('.letter-card').forEach(c => c.classList.add('flipped'));
             }, 100);
         
+            // Manteniamo il tuo HTML originale al 100%
             return `
                 <div style="padding-bottom: 380px;"> 
                     ${viewGameLayout()}
@@ -675,26 +678,24 @@
                 
                 <div class="correction-overlay">
                     <div class="modal-content animate-pop">
-                        <h3 class="text-accent" style="margin-top:0; margin-bottom: 0.5rem; font-size: 1.5rem;">
-                            ${p.name}: ${t.correction_title}
-                        </h3>
-                        <p style="margin-bottom: 1.2rem; opacity: 0.7; font-size: 0.9rem;">${t.enter_word}</p>
+                        <h3 class="text-accent mb-2">${p.name}: ${t.correction_title}</h3>
+                        <p class="mb-4">${t.enter_word}</p>
                         
                         <input type="text" id="input-word" 
-                            class="text-center w-full" 
-                            style="text-transform: uppercase; font-weight: 900; font-size: 2.2rem; border: 2px solid var(--accent-color); border-radius: 18px; padding: 10px; margin-bottom: 15px; outline: none; background: #f8fafc;" 
+                            class="text-center w-full text-2xl mb-4" 
+                            style="text-transform: uppercase; font-weight: bold; letter-spacing: 2px;" 
                             autocomplete="off" autofocus>
                         
-                        <div id="word-error" class="text-danger font-bold mb-3 hidden text-center">
+                        <div id="word-error" class="text-danger font-bold mb-4 hidden">
                              ⚠️ ${t.invalid_word}
                         </div>
         
-                        <div class="flex-center" style="background: rgba(0,0,0,0.04); padding: 1rem; border-radius: 1.2rem; justify-content: space-between; display: flex; margin-bottom: 15px;">
-                            <span style="font-weight: bold;">${t.score_est}</span>
-                            <span id="display-score" style="font-size: 2rem; font-weight: 900; color: var(--accent-color);">0</span>
+                        <div class="flex-center gap-2 mb-4">
+                            <span>${t.score_est}</span>
+                            <span id="display-score" class="text-2xl font-bold text-accent">0</span>
                         </div>
         
-                        <button id="btn-confirm-score" class="btn-primary w-full" style="padding: 16px; border-radius: 18px; font-size: 1.3rem;">
+                        <button id="btn-confirm-score" class="btn-primary w-full">
                             ${t.confirm_word}
                         </button>
                     </div>
