@@ -259,6 +259,21 @@
         body.modal-open .app-container {
             filter: none !important; /* Impedisce al gioco di diventare sfuocato */
         }
+
+        .correction-dock {
+            position: sticky;
+            bottom: 1rem; /* Resta incollato a 1 centimetro dal fondo dello schermo */
+            z-index: 100;
+            width: 100%;
+            margin-top: 2rem; /* Crea un po' di spazio vuoto tra le lettere e il pannello */
+            animation: slide-up 0.3s ease-out;
+        }
+        
+        @keyframes slide-up {
+            from { transform: translateY(50px); opacity: 0; }
+            to { transform: translateY(0); opacity: 1; }
+        }
+        
         /* Utilities */
         .flex-center { display: flex; justify-content: center; align-items: center; gap: 1rem; flex-wrap: wrap; }
         .mt-4 { margin-top: 1rem; } .mb-4 { margin-bottom: 1rem; }
@@ -663,45 +678,40 @@
        function viewCorrection() {
             const p = state.players[state.tempCorrectionIndex];
             
-            // Gira le carte dopo un mini delay
+            // Gira le carte per rivelare i punteggi
             setTimeout(() => {
                 document.querySelectorAll('.letter-card').forEach(c => c.classList.add('flipped'));
             }, 100);
-        
-            return `
-                <div style="padding-bottom: 380px;"> 
-                    ${viewGameLayout()}
-                </div>
-                
-                <div class="correction-overlay">
-                    <div class="modal-content animate-pop">
-                        <h3 class="text-accent" style="margin-top:0; margin-bottom: 0.5rem; font-size: 1.5rem;">
-                            ${p.name}: ${t.correction_title}
-                        </h3>
-                        <p style="margin-bottom: 1.2rem; opacity: 0.7; font-size: 0.9rem;">${t.enter_word}</p>
+
+            // QUESTO È IL TUO HTML ORIGINALE, racchiuso nel nuovo "dock"
+            const panelHTML = `
+                <div class="correction-dock">
+                    <div class="glass modal-content" style="width: 100%; max-width: 100%; margin: 0; box-shadow: 0 -5px 25px rgba(0,0,0,0.15);">
+                        <h2>${t.correctionPhase}</h2>
+                        <h3 style="color:${p.color}">${t.judging} ${p.name}</h3>
                         
-                        <input type="text" id="input-word" 
-                            class="text-center w-full" 
-                            style="text-transform: uppercase; font-weight: 900; font-size: 2.2rem; border: 2px solid var(--accent-color); border-radius: 18px; padding: 10px; margin-bottom: 15px; outline: none; background: #f8fafc;" 
-                            autocomplete="off" autofocus>
-                        
-                        <div id="word-error" class="text-danger font-bold mb-3 hidden text-center">
-                             ⚠️ ${t.invalid_word}
+                        <div class="mt-4">
+                            <label><b>${t.wordInput}</b></label>
+                            <input type="text" id="input-word" class="mt-4 text-center text-4xl" style="text-transform: uppercase;" autocomplete="off" autofocus>
+                            <div id="word-error" class="text-danger mt-2 font-bold hidden">${t.errNoLetters}</div>
                         </div>
-        
-                        <div class="flex-center" style="background: rgba(0,0,0,0.04); padding: 1rem; border-radius: 1.2rem; justify-content: space-between; display: flex; margin-bottom: 15px;">
-                            <span style="font-weight: bold;">${t.score_est}</span>
-                            <span id="display-score" style="font-size: 2rem; font-weight: 900; color: var(--accent-color);">0</span>
+
+                        <div class="text-4xl mt-8 mb-8">
+                            ${t.calcScore} <span id="display-score" style="font-weight:900; color:var(--accent-color)">0</span> ${t.points}
                         </div>
-        
-                        <button id="btn-confirm-score" class="btn-primary w-full" style="padding: 16px; border-radius: 18px; font-size: 1.3rem;">
-                            ${t.confirm_word}
-                        </button>
+
+                        <button id="btn-confirm-score" class="btn-primary w-full text-2xl">${t.confirm}</button>
                     </div>
                 </div>
             `;
-        }
 
+            // PRENDE IL LAYOUT DELLE LETTERE E INIETTA IL PANNELLO AL SUO INTERNO
+            let layout = viewGameLayout();
+            layout = layout.replace('</main>', panelHTML + '</main>');
+
+            return layout;
+        }
+        
         function viewSummary() {
             // Sort by totalScore desc
             const sorted = [...state.players].sort((a,b) => b.totalScore - a.totalScore);
