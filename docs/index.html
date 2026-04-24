@@ -229,27 +229,38 @@
         
         .correction-overlay {
             position: fixed !important;
-            bottom: 0 !important;
-            left: 0 !important;
-            width: 100% !important;
-            height: auto !important; 
-            background: transparent !important; 
-            backdrop-filter: none !important; 
+            top: 0; left: 0;
+            width: 100%;
+            height: 100%;
+            background: transparent !important; /* Rimuove lo sfondo scuro */
+            backdrop-filter: none !important;    /* RIMUOVE IL BLUR DALLE LETTERE */
+            -webkit-backdrop-filter: none !important;
             display: flex !important;
             justify-content: center !important;
-            align-items: flex-end !important;
-            padding-bottom: 20px !important;
-            z-index: 2000 !important;
+            align-items: flex-end !important;    /* Spinge il pannello in fondo */
+            padding-bottom: 20px !important;     /* Distanza dal bordo basso */
+            z-index: 10000 !important;           /* Sopra a tutto */
+            pointer-events: none;                /* Permette di cliccare "attraverso" lo spazio vuoto */
         }
-
+        
+        /* 2. Rendi il riquadro della correzione un vero pannello flottante */
         .correction-overlay .modal-content {
-            width: 95% !important;
-            max-width: 500px !important;
-            margin: 0 auto !important;
-            border: 1px solid rgba(255, 255, 255, 0.2) !important;
-            box-shadow: 0 -10px 25px rgba(0, 0, 0, 0.2) !important;
+            width: 90% !important;
+            max-width: 400px !important;
+            pointer-events: auto;                /* Riabilita i click solo sul pannello */
+            background: rgba(255, 255, 255, 0.85) !important;
+            backdrop-filter: blur(10px) !important; /* Il blur rimane SOLO dentro il pannello */
+            -webkit-backdrop-filter: blur(10px) !important;
+            border: 1px solid rgba(255, 255, 255, 0.3) !important;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3) !important;
+            border-radius: 20px !important;
+            margin: 0 !important;
         }
-
+        
+        /* 3. Evita che il body venga sfocato quando questa modale è aperta */
+        body.modal-open .app-container {
+            filter: none !important; /* Impedisce al gioco di diventare sfuocato */
+        }
         /* Utilities */
         .flex-center { display: flex; justify-content: center; align-items: center; gap: 1rem; flex-wrap: wrap; }
         .mt-4 { margin-top: 1rem; } .mb-4 { margin-bottom: 1rem; }
@@ -650,37 +661,33 @@
             }, 100);
 
             return `
-                ${viewGameLayout()}
-                <div class="correction-overlay">
-                    <div class="modal-content glass animate-pop">
-                    <h2>${t.correctionPhase}</h2> 
+        <div class="correction-overlay">
+            <div class="modal-content animate-pop">
+                <div class="p-4">
+                    <h3 class="text-xl font-bold text-accent mb-2">${p.name}</h3>
+                    <p class="text-sm opacity-75 mb-4">Inserisci la parola composta:</p>
                     
-                        <div class="modal-overlay">
-
-                        <h3 style="color:${p.color}">${t.judging} ${p.name}</h3>
-                        
-                        <div class="mt-4">
-                            <label><b>${t.wordInput}</b></label>
-                            <input type="text" id="input-word" class="mt-4 text-center text-4xl" style="text-transform: uppercase;" autocomplete="off" autofocus>
-                            <div id="word-error" class="text-danger mt-2 font-bold hidden">${t.errNoLetters}</div>
-                        </div>
-
-                        <!-- <div class="mt-8 mb-4"> -->
-                        <!--    <label><b>${t.validQ}</b></label> -->
-                        <!--    <div class="flex-center mt-4"> -->
-                        <!--        <button id="btn-valid-yes" class="btn-success" style="opacity:1;">${t.yes}</button> -->
-                        <!--        <button id="btn-valid-no" class="btn-danger" style="opacity:0.5;">${t.no}</button> -->
-                        <!--    </div> -->
-                        <!-- </div> -->
-
-                        <div class="text-4xl mt-8 mb-8">
-                            ${t.calcScore} <span id="display-score" style="font-weight:900; color:var(--accent-color)">0</span> ${t.points}
-                        </div>
-
-                        <button id="btn-confirm-score" class="btn-primary w-full text-2xl">${t.confirm}</button>
+                    <input type="text" id="input-word" 
+                        class="w-full bg-white/50 border-2 border-accent/30 rounded-xl p-3 text-center text-2xl font-bold tracking-widest uppercase focus:border-accent outline-none mb-3"
+                        placeholder="..." autofocus>
+                    
+                    <div id="word-error" class="text-danger text-xs font-bold mb-2 hidden">
+                         ⚠️ Lettere non disponibili o non valide!
                     </div>
+
+                    <div class="flex justify-between items-center bg-accent/10 rounded-xl p-3 mb-4">
+                        <span class="text-sm font-medium">Punteggio stimato:</span>
+                        <span id="display-score" class="text-2xl font-black text-accent">0</span>
+                    </div>
+
+                    <button id="btn-confirm-score" class="w-full bg-accent hover:bg-accent-hover text-white font-bold py-3 rounded-xl transition-all shadow-lg active:scale-95">
+                        CONFERMA PAROLA
+                    </button>
                 </div>
-            `;
+            </div>
+        </div>
+    `;
+}
         }
 
         function viewSummary() {
