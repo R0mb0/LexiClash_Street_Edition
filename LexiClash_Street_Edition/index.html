@@ -1,0 +1,1055 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>LexiClash: Street Edition</title>
+    <style>
+        /* === CORE VARIABLES (LIGHT THEME) === */
+        :root {
+            --bg-color: #f0f4f8;
+            --text-color: #1e293b;
+            --card-bg: rgba(255, 255, 255, 0.85);
+            --card-border: rgba(0, 0, 0, 0.1);
+            --accent-color: #3b82f6;
+            --accent-hover: #2563eb;
+            --secondary: #64748b;
+            --danger: #ef4444;
+            --danger-hover: #dc2626;
+            --success: #10b981;
+            --warning: #f59e0b;
+            --shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+            --glow: 0 0 15px rgba(59, 130, 246, 0.5);
+            
+            font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+        }
+
+        /* === DYNAMIC DARK THEME === */
+        @media (prefers-color-scheme: dark) {
+            :root {
+                --bg-color: #0f172a;
+                --text-color: #f8fafc;
+                --card-bg: rgba(30, 41, 59, 0.85);
+                --card-border: rgba(255, 255, 255, 0.1);
+                --accent-color: #60a5fa;
+                --accent-hover: #3b82f6;
+                --secondary: #94a3b8;
+                --shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+                --glow: 0 0 20px rgba(96, 165, 250, 0.6);
+            }
+        }
+
+        /* === GLOBAL RESET & LAYOUT === */
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        
+        body {
+            background: var(--bg-color);
+            color: var(--text-color);
+            transition: background 0.4s ease, color 0.4s ease;
+            min-height: 100vh;
+            overflow-x: hidden;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .hidden { display: none !important; }
+        
+        /* Glassmorphism Classes */
+        .glass {
+            background: var(--card-bg);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border: 1px solid var(--card-border);
+            border-radius: 1.5rem;
+            box-shadow: var(--shadow);
+            padding: 2rem;
+        }
+
+        /* === TYPOGRAPHY & BUTTONS === */
+        h1, h2, h3 { font-weight: 800; margin-bottom: 1rem; text-align: center; }
+        h1 { font-size: clamp(2rem, 5vw, 4rem); text-transform: uppercase; letter-spacing: 2px; }
+        
+        button {
+            border: none; border-radius: 0.75rem; padding: 1rem 1.5rem;
+            font-size: 1.1rem; font-weight: bold; cursor: pointer;
+            transition: all 0.2s ease;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            color: white;
+        }
+        button:active { transform: scale(0.95); }
+        button:disabled { opacity: 0.5; cursor: not-allowed; transform: none; }
+        
+        .btn-primary { background: var(--accent-color); }
+        .btn-primary:hover:not(:disabled) { background: var(--accent-hover); box-shadow: var(--glow); }
+        .btn-danger { background: var(--danger); }
+        .btn-danger:hover:not(:disabled) { background: var(--danger-hover); }
+        .btn-success { background: var(--success); }
+        .btn-warning { background: var(--warning); color: #111; }
+
+        input, select {
+            background: var(--bg-color); color: var(--text-color);
+            border: 1px solid var(--card-border); border-radius: 0.5rem;
+            padding: 0.75rem; font-size: 1rem; width: 100%;
+        }
+        input:focus { outline: 2px solid var(--accent-color); }
+
+        /* === MAIN APPLICATION CONTAINER === */
+        #app-container {
+            display: flex; flex-direction: column; flex: 1;
+            padding: clamp(1rem, 3vw, 3rem);
+            max-width: 1600px; margin: 0 auto; width: 100%;
+        }
+
+        /* === PROJECTION / THEATER MODE (FLEX LAYOUT) === */
+        .game-layout {
+            display: flex; flex-direction: column; gap: 2rem; flex: 1;
+        }
+        @media (min-width: 1024px) {
+            .game-layout { flex-direction: row; }
+            .stage { flex: 3; display: flex; flex-direction: column; justify-content: center; }
+            .sidebar { flex: 1; max-width: 350px; }
+        }
+
+        /* === BOARD & LETTER CARDS === */
+        .board {
+            display: flex; flex-wrap: wrap; justify-content: center; gap: 1rem;
+            margin: 2rem 0; min-height: 25vh;
+        }
+
+        .letter-card {
+            perspective: 1000px;
+            width: clamp(60px, 8vw, 120px);
+            height: clamp(90px, 12vw, 180px);
+            position: relative;
+        }
+        
+        .card-inner {
+            width: 100%; height: 100%;
+            transition: transform 0.8s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            transform-style: preserve-3d;
+            position: absolute;
+        }
+        
+        .letter-card.flipped .card-inner { transform: rotateY(180deg); }
+        
+        .card-front, .card-back {
+            position: absolute; width: 100%; height: 100%;
+            backface-visibility: hidden; border-radius: 1rem;
+            display: flex; align-items: center; justify-content: center;
+            box-shadow: var(--shadow); border: 2px solid var(--card-border);
+        }
+        
+        .card-front {
+            background: var(--card-bg); font-size: clamp(2.5rem, 5vw, 5rem);
+            font-weight: 900; color: var(--text-color);
+        }
+        
+        .card-back {
+            background: var(--accent-color); color: white;
+            transform: rotateY(180deg); flex-direction: column;
+            border: none;
+        }
+        .card-back .letter { font-size: clamp(2rem, 4vw, 4rem); font-weight: bold; }
+        .card-back .points {
+            font-size: clamp(1rem, 2vw, 2rem);
+            background: rgba(0,0,0,0.2); border-radius: 50%;
+            width: 40px; height: 40px; display: flex; align-items: center; justify-content: center;
+            margin-top: 0.5rem;
+        }
+
+        /* Empty slot placeholder */
+        .slot-empty {
+            width: clamp(60px, 8vw, 120px); height: clamp(90px, 12vw, 180px);
+            border: 3px dashed var(--secondary); border-radius: 1rem;
+            opacity: 0.5;
+        }
+
+        /* === SCOREBOARD & PLAYER BADGES === */
+        .scoreboard {
+            display: flex; flex-direction: column; gap: 1rem;
+            overflow-y: auto; max-height: 80vh; padding-right: 0.5rem;
+        }
+        .player-badge {
+            display: flex; justify-content: space-between; align-items: center;
+            padding: 1rem; border-radius: 1rem; background: var(--card-bg);
+            border-left: 8px solid; transition: all 0.3s;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+            overflow: hidden;
+        }
+        .player-badge.active {
+            /* transform: scale(1.05); */
+            box-shadow: var(--glow);
+            animation: pulse-glow 2s infinite;
+            border: 2px solid var(--text-color); 
+        }
+        .player-badge .name { font-weight: bold; font-size: 1.2rem; }
+        .player-badge .score { font-size: 1.5rem; font-weight: 900; }
+
+        @keyframes pulse-glow {
+            0% { box-shadow: 0 0 10px rgba(59, 130, 246, 0.4); }
+            50% { box-shadow: 0 0 25px rgba(59, 130, 246, 0.8); }
+            100% { box-shadow: 0 0 10px rgba(59, 130, 246, 0.4); }
+        }
+
+        /* === TIMER === */
+        .timer-container {
+            display: flex; justify-content: center; align-items: center;
+            position: relative; width: 150px; height: 150px; margin: 0 auto 2rem;
+        }
+        .timer-svg { transform: rotate(-90deg); width: 100%; height: 100%; }
+        .timer-circle-bg { fill: none; stroke: var(--card-border); stroke-width: 8; }
+        .timer-circle-progress {
+            fill: none; stroke: var(--accent-color); stroke-width: 8;
+            stroke-dasharray: 283; stroke-dashoffset: 0;
+            transition: stroke-dashoffset 1s linear, stroke 0.3s;
+            stroke-linecap: round;
+        }
+        .timer-text {
+            position: absolute; font-size: 3rem; font-weight: 900;
+        }
+        .timer-danger { stroke: var(--danger) !important; color: var(--danger); animation: shake 0.5s infinite; }
+
+        @keyframes shake {
+            0% { transform: translateX(0); }
+            25% { transform: translateX(-5px); }
+            50% { transform: translateX(5px); }
+            75% { transform: translateX(-5px); }
+            100% { transform: translateX(0); }
+        }
+
+        /* === MODALS & OVERLAYS === */
+        .modal-overlay {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.6); backdrop-filter: blur(5px);
+            display: flex; justify-content: center; align-items: center; z-index: 1000;
+        }
+        .modal-content {
+            width: 90%; max-width: 600px; text-align: center;
+        }
+        
+        .correction-overlay {
+            position: fixed !important;
+            bottom: 0 !important;
+            left: 50% !important;
+            transform: translateX(-50%) !important; /* Centratura millimetrica */
+            width: 100% !important;
+            max-width: 500px !important; /* Uguale al tuo .app-container */
+            height: auto !important;
+            background: transparent !important; /* Non oscura lo sfondo */
+            display: flex !important;
+            justify-content: center !important;
+            padding: 15px !important;
+            box-sizing: border-box !important;
+            z-index: 10000 !important;
+            pointer-events: none; /* Permette di toccare le lettere nello spazio vuoto */
+        }
+        
+        /* Il pannello bianco vero e proprio */
+        .correction-overlay .modal-content {
+            pointer-events: auto !important; /* Il pannello invece riceve i click */
+            background: #ffffff !important; /* Sfondo solido */
+            border-radius: 30px !important;
+            box-shadow: 0 -10px 40px rgba(0,0,0,0.15) !important;
+            width: 100% !important;
+            border: 1px solid rgba(0,0,0,0.05) !important;
+            padding: 1.5rem !important;
+        }
+        
+        /* 3. Evita che il body venga sfocato quando questa modale è aperta */
+        body.modal-open .app-container {
+            filter: none !important; /* Impedisce al gioco di diventare sfuocato */
+        }
+
+        .correction-dock {
+            position: sticky;
+            bottom: 1rem; /* Resta incollato a 1 centimetro dal fondo dello schermo */
+            z-index: 100;
+            width: 100%;
+            margin-top: 2rem; /* Crea un po' di spazio vuoto tra le lettere e il pannello */
+            animation: slide-up 0.3s ease-out;
+        }
+        
+        @keyframes slide-up {
+            from { transform: translateY(50px); opacity: 0; }
+            to { transform: translateY(0); opacity: 1; }
+        }
+        
+        /* Utilities */
+        .flex-center { display: flex; justify-content: center; align-items: center; gap: 1rem; flex-wrap: wrap; }
+        .mt-4 { margin-top: 1rem; } .mb-4 { margin-bottom: 1rem; }
+        .w-full { width: 100%; }
+        .text-center { text-align: center; }
+        .text-2xl { font-size: 1.5rem; } .text-4xl { font-size: 2.5rem; }
+        
+        #confetti-canvas {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            pointer-events: none; z-index: 9999;
+        }
+    </style>
+</head>
+<body>
+
+    <div id="app-container"></div>
+    <canvas id="confetti-canvas" class="hidden"></canvas>
+
+    <script type="module">
+        // ==========================================
+        // 1. I18N (INTERNATIONALIZATION)
+        // ==========================================
+        const i18nDict = {
+            it: {
+                title: "LexiClash: Street Edition",
+                resume: "Riprendi Partita",
+                newGame: "Nuova Partita",
+                playersTitle: "Registrazione Giocatori",
+                addPlayer: "+ Aggiungi Giocatore",
+                next: "Avanti",
+                settingsTitle: "Impostazioni Partita",
+                winThreshold: "Punteggio Vittoria",
+                timerDur: "Durata Timer (sec)",
+                ruleToggle: "Sistema Punteggio",
+                ruleFrizzy: "Pesi Frizzy (Standard Scarabeo)",
+                ruleChaos: "Caos Casuale (1-9 pt per lettera)",
+                start: "Inizia Gioco",
+                leadPlayer: "Tocca a",
+                pickLetters: "Pesca le Lettere",
+                vowel: "Vocale",
+                consonant: "Consonante",
+                buyExtra: "Compra Slot (-10 pt)",
+                startTimer: "Avvia Timer",
+                correctionPhase: "Fase di Correzione",
+                judging: "Valutazione per",
+                wordInput: "Parola Trovata:",
+                validQ: "Parola Valida (approvata dal gruppo)?",
+                yes: "Sì",
+                no: "No",
+                calcScore: "Punti Calcolati:",
+                confirm: "Conferma Punti",
+                summaryTitle: "Classifica di Fine Round",
+                nextRound: "Prossimo Round",
+                victoryTitle: "Vittoria!",
+                winner: "Il Campione Assoluto è",
+                playAgain: "Gioca Ancora",
+                errNoLetters: "Attenzione: Usa solo le lettere presenti!",
+                points: "pt",
+                round: "Round",
+                target: "Obiettivo:",
+                hardReset: "Cancella tutti i dati salvati",
+                correction_title: "Correzione",
+                enter_word: "Inserisci la parola composta:",
+                invalid_word: "Lettere non disponibili o non valide!",
+                score_est: "Punteggio stimato:",
+                confirm_word: "CONFERMA PAROLA"
+            },
+            en: {
+                title: "LexiClash: Street Edition",
+                resume: "Resume Game",
+                newGame: "New Game",
+                playersTitle: "Player Registration",
+                addPlayer: "+ Add Player",
+                next: "Next",
+                settingsTitle: "Game Settings",
+                winThreshold: "Winning Score",
+                timerDur: "Timer Duration (sec)",
+                ruleToggle: "Scoring System",
+                ruleFrizzy: "Frizzy Weights (Standard Scrabble)",
+                ruleChaos: "Chaos Random (1-9 pts per letter)",
+                start: "Start Game",
+                leadPlayer: "Lead Player",
+                pickLetters: "Pick Letters",
+                vowel: "Vowel",
+                consonant: "Consonant",
+                buyExtra: "Buy Slot (-10 pts)",
+                startTimer: "Start Timer",
+                correctionPhase: "Correction Phase",
+                judging: "Judging",
+                wordInput: "Found Word:",
+                validQ: "Valid Word (group approved)?",
+                yes: "Yes",
+                no: "No",
+                calcScore: "Calculated Points:",
+                confirm: "Confirm Points",
+                summaryTitle: "Round Summary",
+                nextRound: "Next Round",
+                victoryTitle: "Victory!",
+                winner: "The Absolute Champion is",
+                playAgain: "Play Again",
+                errNoLetters: "Warning: Use only available letters!",
+                points: "pts",
+                round: "Round",
+                target: "Target:",
+                hardReset: "Delete all saved data",
+                correction_title: "Correction",
+                enter_word: "Enter the word composed:",
+                invalid_word: "Letters not available or invalid!",
+                score_est: "Estimated Score:",
+                confirm_word: "CONFIRM WORD"
+            }
+        };
+
+        const userLang = navigator.language.toLowerCase().startsWith('it') ? 'it' : 'en';
+        const t = i18nDict[userLang];
+
+        // ==========================================
+        // 2. GAME ENGINE & UTILITIES
+        // ==========================================
+        const VOWELS = ['A','E','I','O','U'];
+        const CONSONANTS = ['B','C','D','F','G','H','L','M','N','P','Q','R','S','T','V','Z'];
+
+        const SCORING_MAP = {
+            'A':1, 'E':1, 'I':1, 'O':1, 'U':1, 'L':1, 'N':1, 'R':1, 'S':1, 'T':1,
+            'D':2, 'G':2,
+            'B':3, 'C':3, 'M':3, 'P':3,
+            'F':4, 'H':4, 'V':4, 'W':4, 'Y':4,
+            'K':5,
+            'J':8, 'X':8,
+            'Q':10, 'Z':10
+        };
+
+        function getRandomElement(arr) {
+            return arr[Math.floor(Math.random() * arr.length)];
+        }
+
+        // Ticking audio synthesizer
+        let audioCtx;
+        function playTick(isLastSeconds = false) {
+            if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+            if (audioCtx.state === 'suspended') audioCtx.resume();
+            
+            const osc = audioCtx.createOscillator();
+            const gain = audioCtx.createGain();
+            osc.connect(gain);
+            gain.connect(audioCtx.destination);
+            
+            osc.type = isLastSeconds ? 'square' : 'sine';
+            osc.frequency.setValueAtTime(isLastSeconds ? 1200 : 800, audioCtx.currentTime);
+            osc.frequency.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.05);
+            
+            gain.gain.setValueAtTime(isLastSeconds ? 1.5 : 1, audioCtx.currentTime);
+            gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.05);
+            
+            osc.start(audioCtx.currentTime);
+            osc.stop(audioCtx.currentTime + 0.05);
+        }
+
+        function playVictorySound() {
+            if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+            if (audioCtx.state === 'suspended') audioCtx.resume();
+            
+            const freqs = [440, 554, 659, 880];
+            freqs.forEach((freq, i) => {
+                const osc = audioCtx.createOscillator();
+                const gain = audioCtx.createGain();
+                osc.connect(gain);
+                gain.connect(audioCtx.destination);
+                osc.type = 'triangle';
+                osc.frequency.value = freq;
+                gain.gain.setValueAtTime(0, audioCtx.currentTime + (i * 0.15));
+                gain.gain.linearRampToValueAtTime(0.5, audioCtx.currentTime + (i * 0.15) + 0.1);
+                gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + (i * 0.15) + 1);
+                osc.start(audioCtx.currentTime + (i * 0.15));
+                osc.stop(audioCtx.currentTime + (i * 0.15) + 1);
+            });
+        }
+
+        // ==========================================
+        // 3. STATE MANAGEMENT
+        // ==========================================
+        const STORAGE_KEY = 'lexiclash_state_v2';
+        
+        class GameState {
+            constructor() {
+                this.reset();
+            }
+
+            reset() {
+                this.players = [
+                    { id: 1, name: "Player 1", color: "#ef4444", totalScore: 0, currentRoundPoints: 0, isActive: false },
+                    { id: 2, name: "Player 2", color: "#3b82f6", totalScore: 0, currentRoundPoints: 0, isActive: false }
+                ];
+                this.settings = { winThreshold: 200, timerDuration: 30, rule: 'frizzy', language: userLang };
+                this.turn = { roundNumber: 1, activePlayerIndex: 0, phase: 'INIT' }; 
+                // Phases: INIT, REGISTRATION, SETTINGS, SELECTION, COUNTDOWN, CORRECTION, SUMMARY, VICTORY
+                this.board = { letters: [], maxSlots: 9 };
+                this.tempCorrectionIndex = 0; // For iterating during CORRECTION
+                this.timerLeft = 0;
+            }
+
+            load() {
+                try {
+                    const saved = localStorage.getItem(STORAGE_KEY);
+                    if (saved) {
+                        const parsed = JSON.parse(saved);
+                        Object.assign(this, parsed);
+                        return true;
+                    }
+                } catch (e) { console.error("Could not load state", e); }
+                return false;
+            }
+
+            save() {
+                try {
+                    localStorage.setItem(STORAGE_KEY, JSON.stringify(this));
+                } catch (e) { console.error("Could not save state", e); }
+            }
+
+            addPlayer() {
+                if (this.players.length >= 10) return;
+                const colors = ['#ef4444', '#3b82f6', '#10b981', '#f59e0b', '#8b5cf6', '#ec4899', '#14b8a6', '#f97316', '#6366f1', '#eab308'];
+                const id = Date.now();
+                this.players.push({
+                    id, 
+                    name: `Player ${this.players.length + 1}`, 
+                    color: colors[this.players.length % colors.length],
+                    totalScore: 0, currentRoundPoints: 0, isActive: false
+                });
+                this.save();
+            }
+
+            removePlayer(index) {
+                if (this.players.length <= 1) return;
+                this.players.splice(index, 1);
+                this.save();
+            }
+        }
+
+        const state = new GameState();
+
+        // ==========================================
+        // 4. UI COMPONENTS (RENDERERS)
+        // ==========================================
+        const appDiv = document.getElementById('app-container');
+
+        function render() {
+            switch(state.turn.phase) {
+                case 'INIT': appDiv.innerHTML = viewInit(); break;
+                case 'REGISTRATION': appDiv.innerHTML = viewRegistration(); break;
+                case 'SETTINGS': appDiv.innerHTML = viewSettings(); break;
+                case 'SELECTION': 
+                case 'COUNTDOWN':
+                    appDiv.innerHTML = viewGameLayout(); 
+                    if(state.turn.phase === 'COUNTDOWN') startTimerLogic();
+                    break;
+                case 'CORRECTION': appDiv.innerHTML = viewCorrection(); break;
+                case 'SUMMARY': appDiv.innerHTML = viewSummary(); break;
+                case 'VICTORY': appDiv.innerHTML = viewVictory(); break;
+            }
+            bindEvents();
+        }
+
+        // --- VIEWS ---
+        function viewInit() {
+            const hasSave = !!localStorage.getItem(STORAGE_KEY);
+            return `
+                <div class="glass max-w-md mx-auto text-center mt-10">
+                    <h1 class="text-accent mb-8">${t.title}</h1>
+                    <div class="flex-center" style="flex-direction: column;">
+                        ${hasSave ? `<button id="btn-resume" class="btn-primary w-full mb-4 text-2xl">${t.resume}</button>` : ''}
+                        <button id="btn-new" class="btn-warning w-full text-2xl">${t.newGame}</button>
+                        
+                        <!-- NUOVO: Pulsante Hard Reset (visibile solo se c'è un salvataggio) -->
+                        ${hasSave ? `<a href="#" id="btn-hard-reset" class="mt-8 font-bold" style="color: var(--danger); text-decoration: underline;">${t.hardReset}</a>` : ''}
+                    </div>
+                </div>
+            `;
+        }
+
+        function viewRegistration() {
+            return `
+                <div class="glass max-w-2xl mx-auto mt-10">
+                    <h2>${t.playersTitle}</h2>
+                    <div class="flex-center flex-col w-full">
+                        ${state.players.map((p, i) => `
+                            <div class="flex-center w-full mb-4" style="flex-wrap: nowrap;">
+                                <input type="color" value="${p.color}" data-idx="${i}" class="input-color" style="width: 50px; height: 50px; padding:0; cursor:pointer;">
+                                <input type="text" value="${p.name}" data-idx="${i}" class="input-name" style="flex:1;">
+                                <button data-action="remove-player" data-idx="${i}" class="btn-danger">X</button>
+                            </div>
+                        `).join('')}
+                    </div>
+                    <div class="flex-center mt-8">
+                        <button id="btn-add-player" class="btn-primary">${t.addPlayer}</button>
+                        <button id="btn-next-reg" class="btn-success">${t.next} ➔</button>
+                    </div>
+                </div>
+            `;
+        }
+
+        function viewSettings() {
+            return `
+                <div class="glass max-w-xl mx-auto mt-10">
+                    <h2>${t.settingsTitle}</h2>
+                    <div class="mb-4">
+                    <label><b>${t.winThreshold}</b></label>
+                        <input type="number" id="sel-win" class="mt-4" value="${state.settings.winThreshold}" step="1">
+                    </div>
+                    <div class="mb-4">
+                    <label><b>${t.timerDur}</b></label>
+                        <input type="number" id="sel-time" class="mt-4" value="${state.settings.timerDuration}" step="1">
+                    </div>
+                    <!-------------------------->
+                    <div class="mb-8">
+                        <label><b>${t.ruleToggle}</b></label>
+                        <select id="sel-rule" class="mt-4">
+                            <option value="frizzy" ${state.settings.rule==='frizzy'?'selected':''}>${t.ruleFrizzy}</option>
+                            <option value="chaos" ${state.settings.rule==='chaos'?'selected':''}>${t.ruleChaos}</option>
+                        </select>
+                    </div>
+                    <button id="btn-start-game" class="btn-success w-full text-2xl" style="margin-top: 2rem;">${t.start}</button>
+                </div>
+            `;
+        }
+
+        function viewGameLayout() {
+            const activeP = state.players[state.turn.activePlayerIndex];
+            const isSel = state.turn.phase === 'SELECTION';
+            
+            // Build slots
+            let slotsHTML = '';
+            for(let i=0; i<state.board.maxSlots; i++) {
+                if(i < state.board.letters.length) {
+                    let l = state.board.letters[i];
+                    slotsHTML += `
+                        <div class="letter-card">
+                            <div class="card-inner">
+                                <div class="card-front">${l.letter}</div>
+                                <div class="card-back">
+                                    <span class="letter">${l.letter}</span>
+                                    <span class="points">${l.value}</span>
+                                </div>
+                            </div>
+                        </div>
+                    `;
+                } else {
+                    slotsHTML += `<div class="slot-empty"></div>`;
+                }
+            }
+
+            const canStart = state.board.letters.length >= state.board.maxSlots;
+
+            return `
+                <div class="game-layout">
+                    <!-- Main Stage -->
+                    <main class="stage glass">
+                        <div class="text-center mb-4">
+                            <h3>${t.round} ${state.turn.roundNumber} - ${t.target} ${state.settings.winThreshold}</h3>
+                            <div style="font-size: 1.5rem;">
+                                ${t.leadPlayer}: <span style="color:${activeP.color}; font-weight:900">${activeP.name}</span>
+                            </div>
+                        </div>
+
+                        ${state.turn.phase === 'COUNTDOWN' ? `
+                            <div class="timer-container">
+                                <svg class="timer-svg" viewBox="0 0 100 100">
+                                    <circle class="timer-circle-bg" cx="50" cy="50" r="45"></circle>
+                                    <circle id="timer-path" class="timer-circle-progress" cx="50" cy="50" r="45"></circle>
+                                </svg>
+                                <span id="timer-label" class="timer-text">${state.settings.timerDuration}</span>
+                            </div>
+                        ` : ''}
+
+                        <div class="board" id="board-container">${slotsHTML}</div>
+
+                        ${isSel ? `
+                            <div class="flex-center mt-8 controls-area">
+                                <button id="btn-vowel" class="btn-primary text-2xl" ${canStart?'disabled':''}>${t.vowel}</button>
+                                <button id="btn-consonant" class="btn-warning text-2xl" ${canStart?'disabled':''}>${t.consonant}</button>
+                            </div>
+                            <div class="flex-center mt-4 controls-area">
+                                <button id="btn-buy" class="btn-danger">${t.buyExtra}</button>
+                                ${canStart ? `<button id="btn-start-timer" class="btn-success text-2xl" style="animation: pulse-glow 2s infinite;">${t.startTimer}</button>` : ''}
+                            </div>
+                        ` : ''}
+                    </main>
+
+                    <!-- Scoreboard Sidebar -->
+                    <aside class="sidebar scoreboard">
+                        ${state.players.map(p => `
+                            <div class="player-badge ${p.id === activeP.id ? 'active' : ''}" style="border-left-color: ${p.color}">
+                                <div class="name">${p.name}</div>
+                                <div class="score">${p.totalScore}</div>
+                            </div>
+                        `).join('')}
+                    </aside>
+                </div>
+            `;
+        }
+
+       function viewCorrection() {
+            const p = state.players[state.tempCorrectionIndex];
+            
+            // Gira le carte per rivelare i punteggi
+            setTimeout(() => {
+                document.querySelectorAll('.letter-card').forEach(c => c.classList.add('flipped'));
+            }, 100);
+
+            // QUESTO È IL TUO HTML ORIGINALE, racchiuso nel nuovo "dock"
+            const panelHTML = `
+                <div class="correction-dock">
+                    <div class="glass modal-content" style="width: 100%; max-width: 100%; margin: 0; box-shadow: 0 -5px 25px rgba(0,0,0,0.15);">
+                        <h2>${t.correctionPhase}</h2>
+                        <h3 style="color:${p.color}">${t.judging} ${p.name}</h3>
+                        
+                        <div class="mt-4">
+                            <label><b>${t.wordInput}</b></label>
+                            <input type="text" id="input-word" class="mt-4 text-center text-4xl" style="text-transform: uppercase;" autocomplete="off" autofocus>
+                            <div id="word-error" class="text-danger mt-2 font-bold hidden">${t.errNoLetters}</div>
+                        </div>
+
+                        <div class="text-4xl mt-8 mb-8">
+                            ${t.calcScore} <span id="display-score" style="font-weight:900; color:var(--accent-color)">0</span> ${t.points}
+                        </div>
+
+                        <button id="btn-confirm-score" class="btn-primary w-full text-2xl">${t.confirm}</button>
+                    </div>
+                </div>
+            `;
+
+            // PRENDE IL LAYOUT DELLE LETTERE E INIETTA IL PANNELLO AL SUO INTERNO
+            let layout = viewGameLayout();
+            layout = layout.replace('</main>', panelHTML + '</main>');
+
+            return layout;
+        }
+        
+        function viewSummary() {
+            // Sort by totalScore desc
+            const sorted = [...state.players].sort((a,b) => b.totalScore - a.totalScore);
+            return `
+                <div class="glass max-w-2xl mx-auto mt-10 text-center">
+                    <h2>${t.summaryTitle} - ${t.round} ${state.turn.roundNumber}</h2>
+                    <div class="scoreboard mt-8 mb-8">
+                        ${sorted.map((p, i) => `
+                            <div class="player-badge" style="border-left-color: ${p.color}; justify-content: flex-start; gap: 2rem;">
+                                <div style="font-size:2rem; font-weight:bold; width: 40px;">#${i+1}</div>
+                                <div class="name" style="flex:1; text-align:left;">${p.name} <span style="font-size:0.9rem; opacity:0.7">(+${p.currentRoundPoints})</span></div>
+                                <div class="score">${p.totalScore}</div>
+                            </div>
+                        `).join('')}
+                    </div>
+                    <button id="btn-next-round" class="btn-primary w-full text-2xl">${t.nextRound}</button>
+                </div>
+            `;
+        }
+
+        function viewVictory() {
+            const winner = [...state.players].sort((a,b) => b.totalScore - a.totalScore)[0];
+            setTimeout(() => { triggerConfetti(); playVictorySound(); }, 100);
+            return `
+                <div class="glass max-w-2xl mx-auto mt-10 text-center" style="animation: pulse-glow 2s infinite;">
+                    <h1 class="text-accent" style="font-size: 4rem;">${t.victoryTitle}</h1>
+                    <h2 class="mt-8">${t.winner}</h2>
+                    <div class="text-4xl mt-4 mb-8" style="color: ${winner.color}; font-weight: 900;">
+                        🏆 ${winner.name} 🏆
+                    </div>
+                    <div class="text-2xl mb-8">${winner.totalScore} ${t.points}</div>
+                    <button id="btn-play-again" class="btn-success w-full text-2xl">${t.playAgain}</button>
+                </div>
+            `;
+        }
+
+
+        // ==========================================
+        // 5. GAME LOGIC & EVENT BINDINGS
+        // ==========================================
+
+        function bindEvents() {
+            // Init
+            const btnResume = document.getElementById('btn-resume');
+            if(btnResume) btnResume.onclick = () => { state.load(); render(); };
+            const btnNew = document.getElementById('btn-new');
+            if(btnNew) btnNew.onclick = () => { state.reset(); state.turn.phase = 'REGISTRATION'; render(); };
+
+            // NUOVO: Evento Hard Reset
+            const btnHardReset = document.getElementById('btn-hard-reset');
+            if(btnHardReset) {
+                btnHardReset.onclick = (e) => {
+                    e.preventDefault(); 
+                    localStorage.removeItem(STORAGE_KEY); 
+                    state.reset(); 
+                    render(); 
+                };
+            }
+
+            // Registration
+            document.querySelectorAll('.input-name').forEach(inp => {
+                inp.onchange = (e) => { state.players[e.target.dataset.idx].name = e.target.value; state.save(); };
+            });
+            document.querySelectorAll('.input-color').forEach(inp => {
+                inp.onchange = (e) => { state.players[e.target.dataset.idx].color = e.target.value; state.save(); };
+            });
+            document.querySelectorAll('[data-action="remove-player"]').forEach(btn => {
+                btn.onclick = (e) => { state.removePlayer(e.target.dataset.idx); render(); };
+            });
+            const btnAddP = document.getElementById('btn-add-player');
+            if(btnAddP) btnAddP.onclick = () => { state.addPlayer(); render(); };
+            const btnNextReg = document.getElementById('btn-next-reg');
+            if(btnNextReg) btnNextReg.onclick = () => { state.turn.phase = 'SETTINGS'; render(); };
+
+            // Settings
+            const btnStartG = document.getElementById('btn-start-game');
+            if(btnStartG) {
+                btnStartG.onclick = () => {
+                    state.settings.winThreshold = parseInt(document.getElementById('sel-win').value);
+                    state.settings.timerDuration = parseInt(document.getElementById('sel-time').value);
+                    state.settings.rule = document.getElementById('sel-rule').value;
+                    state.turn.phase = 'SELECTION';
+                    state.board.letters = [];
+                    state.board.maxSlots = 9;
+                    state.save();
+                    render();
+                };
+            }
+
+            // Selection
+            const btnVowel = document.getElementById('btn-vowel');
+            if(btnVowel) btnVowel.onclick = () => pickLetter('VOWEL');
+            const btnCons = document.getElementById('btn-consonant');
+            if(btnCons) btnCons.onclick = () => pickLetter('CONSONANT');
+            const btnBuy = document.getElementById('btn-buy');
+            if(btnBuy) btnBuy.onclick = () => {
+                state.players[state.turn.activePlayerIndex].totalScore -= 10;
+                state.board.maxSlots++;
+                state.save();
+                render();
+            };
+            const btnStartTimer = document.getElementById('btn-start-timer');
+            if(btnStartTimer) btnStartTimer.onclick = () => {
+                // Ensure audio context starts on user interaction
+                if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+                if (audioCtx.state === 'suspended') audioCtx.resume();
+                
+                state.turn.phase = 'COUNTDOWN';
+                state.timerLeft = state.settings.timerDuration;
+                state.save();
+                render();
+            };
+
+            // Correction Modal Logic
+            const inpWord = document.getElementById('input-word');
+            //const btnYes = document.getElementById('btn-valid-yes');
+            //const btnNo = document.getElementById('btn-valid-no');
+            const dispScore = document.getElementById('display-score');
+            const errDiv = document.getElementById('word-error');
+            const btnConfirm = document.getElementById('btn-confirm-score');
+            
+            let currentCalculatedScore = 0;
+            //let isValidToggle = true;
+
+           if (inpWord) {
+                inpWord.addEventListener('input', () => {
+                    const word = inpWord.value.toUpperCase();
+                    let tempBoard = [...state.board.letters];
+                    let score = 0;
+                    let error = false;
+
+                    for (let char of word) {
+                        if (char === ' ') continue;
+                        
+                        let idx = tempBoard.findIndex(l => l.letter === char || l.char === char);
+                        
+                        if (idx !== -1) {
+                            score += tempBoard[idx].value;
+                            tempBoard.splice(idx, 1);
+                        } else {
+                            error = true; 
+                            break;
+                        }
+                    }
+
+                    if (error) {
+                        errDiv.classList.remove('hidden');
+                        currentCalculatedScore = 0;
+                    } else {
+                        errDiv.classList.add('hidden');
+                        currentCalculatedScore = score; 
+                    }
+                    
+                    if (dispScore) dispScore.innerText = currentCalculatedScore;
+                });
+            }
+            
+            if(inpWord) inpWord.oninput = updateCorrectionLive;
+            //if(btnYes) btnYes.onclick = () => { isValidToggle=true; btnYes.style.opacity=1; btnNo.style.opacity=0.5; updateCorrectionLive(); };
+            //if(btnNo) btnNo.onclick = () => { isValidToggle=false; btnNo.style.opacity=1; btnYes.style.opacity=0.5; updateCorrectionLive(); };
+            
+            if(btnConfirm) {
+                btnConfirm.onclick = () => {
+                    const p = state.players[state.tempCorrectionIndex];
+                    p.currentRoundPoints = currentCalculatedScore;
+                    p.totalScore += currentCalculatedScore;
+                    
+                    state.tempCorrectionIndex++;
+                    if(state.tempCorrectionIndex >= state.players.length) {
+                        state.turn.phase = 'SUMMARY';
+                        state.save();
+                        render();
+                    } else {
+                        state.save();
+                        render(); // render next player correction modal
+                    }
+                };
+            }
+
+            // Summary / Next Round
+            const btnNextR = document.getElementById('btn-next-round');
+            if(btnNextR) {
+                btnNextR.onclick = () => {
+                    const winner = state.players.find(p => p.totalScore >= state.settings.winThreshold);
+                    if(winner) {
+                        state.turn.phase = 'VICTORY';
+                    } else {
+                        state.turn.roundNumber++;
+                        state.turn.activePlayerIndex = (state.turn.activePlayerIndex + 1) % state.players.length;
+                        state.board.letters = [];
+                        state.board.maxSlots = 9;
+                        state.turn.phase = 'SELECTION';
+                        state.players.forEach(p => p.currentRoundPoints = 0);
+                    }
+                    state.save();
+                    render();
+                };
+            }
+
+            // Victory
+            const btnReplay = document.getElementById('btn-play-again');
+            if(btnReplay) {
+                btnReplay.onclick = () => {
+                    stopConfetti();
+                    state.reset();
+                    state.turn.phase = 'REGISTRATION';
+                    state.save();
+                    render();
+                };
+            }
+        }
+
+        function pickLetter(type) {
+            if(state.board.letters.length >= state.board.maxSlots) return;
+            let letter = type === 'VOWEL' ? getRandomElement(VOWELS) : getRandomElement(CONSONANTS);
+            
+            let val = 0;
+            if(state.settings.rule === 'chaos') {
+                val = Math.floor(Math.random() * 9) + 1; // 1-9
+            } else {
+                val = SCORING_MAP[letter] || 1;
+            }
+
+            state.board.letters.push({ letter, value: val });
+            state.save();
+            render();
+        }
+
+        // ==========================================
+        // 6. TIMER LOGIC
+        // ==========================================
+        let timerInterval;
+        function startTimerLogic() {
+            clearInterval(timerInterval);
+            const path = document.getElementById('timer-path');
+            const label = document.getElementById('timer-label');
+            const total = state.settings.timerDuration;
+            
+            timerInterval = setInterval(() => {
+                state.timerLeft--;
+                label.innerText = state.timerLeft;
+                
+                // SVG Progress calculation (Dasharray is 283)
+                const fraction = state.timerLeft / total;
+                path.style.strokeDashoffset = 283 - (fraction * 283);
+
+                if(state.timerLeft <= 5) {
+                    path.classList.add('timer-danger');
+                    label.classList.add('timer-danger');
+                    playTick(true);
+                } else {
+                    playTick(false);
+                }
+
+                if(state.timerLeft <= 0) {
+                    clearInterval(timerInterval);
+                    setTimeout(() => {
+                        state.turn.phase = 'CORRECTION';
+                        state.tempCorrectionIndex = 0;
+                        state.save();
+                        render();
+                    }, 1000);
+                }
+            }, 1000);
+        }
+
+        // ==========================================
+        // 7. CONFETTI ENGINE (CANVAS)
+        // ==========================================
+        const canvas = document.getElementById('confetti-canvas');
+        const ctx = canvas.getContext('2d');
+        let confettiParticles = [];
+        let confettiActive = false;
+        let animFrame;
+
+        function triggerConfetti() {
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
+            canvas.classList.remove('hidden');
+            confettiActive = true;
+            confettiParticles = [];
+            const colors = ['#fce18a', '#ff726d', '#b48def', '#f4306d'];
+            
+            for(let i=0; i<150; i++) {
+                confettiParticles.push({
+                    x: Math.random() * canvas.width,
+                    y: Math.random() * canvas.height - canvas.height,
+                    w: Math.random() * 10 + 5,
+                    h: Math.random() * 10 + 5,
+                    c: colors[Math.floor(Math.random() * colors.length)],
+                    vy: Math.random() * 3 + 2,
+                    vx: Math.random() * 4 - 2,
+                    rot: Math.random() * 360,
+                    rs: Math.random() * 5 - 2.5
+                });
+            }
+            updateConfetti();
+        }
+
+        function updateConfetti() {
+            if(!confettiActive) return;
+            ctx.clearRect(0,0, canvas.width, canvas.height);
+            confettiParticles.forEach(p => {
+                p.y += p.vy;
+                p.x += p.vx;
+                p.rot += p.rs;
+                ctx.save();
+                ctx.translate(p.x, p.y);
+                ctx.rotate(p.rot * Math.PI / 180);
+                ctx.fillStyle = p.c;
+                ctx.fillRect(-p.w/2, -p.h/2, p.w, p.h);
+                ctx.restore();
+                if(p.y > canvas.height) p.y = -10;
+            });
+            animFrame = requestAnimationFrame(updateConfetti);
+        }
+
+        function stopConfetti() {
+            confettiActive = false;
+            cancelAnimationFrame(animFrame);
+            canvas.classList.add('hidden');
+        }
+
+        window.addEventListener('resize', () => {
+            if(confettiActive) {
+                canvas.width = window.innerWidth;
+                canvas.height = window.innerHeight;
+            }
+        });
+
+        // ==========================================
+        // 8. BOOTSTRAP
+        // ==========================================
+        document.addEventListener('DOMContentLoaded', () => {
+            state.load();
+            render();
+        });
+
+    </script>
+</body>
+</html>
