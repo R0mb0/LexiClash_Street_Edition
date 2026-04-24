@@ -226,18 +226,18 @@
         .modal-content {
             width: 90%; max-width: 600px; text-align: center;
         }
-
-        /* Modificatore per l'overlay di correzione */
+        
         .correction-overlay {
-            position: relative !important;
-            height: auto !important;
-            background: transparent !important;
+            position: fixed !important; 
+            top: 0; left: 0; right: 0; bottom: 0;
+            background: rgba(0, 0, 0, 0.4) !important; 
             backdrop-filter: none !important;
             -webkit-backdrop-filter: none !important;
-            padding: 2rem 1rem 4rem 1rem;
-            display: flex;
-            justify-content: center;
-            align-items: flex-start;
+            display: flex !important;
+            justify-content: center !important;
+            align-items: flex-end !important; 
+            padding-bottom: 3rem !important; 
+            z-index: 50;
         }
 
         /* Utilities */
@@ -797,34 +797,39 @@
             let currentCalculatedScore = 0;
             //let isValidToggle = true;
 
-            function updateCorrectionLive() {
-                if(!inpWord) return;
-                const word = inpWord.value.toUpperCase();
-                let tempBoard = [...state.board.letters];
-                let score = 0;
-                let error = false;
+           if (inpWord) {
+                inpWord.addEventListener('input', () => {
+                    const word = inpWord.value.toUpperCase();
+                    let tempBoard = [...state.board.letters];
+                    let score = 0;
+                    let error = false;
 
-                for(let char of word) {
-                    if(char === ' ') continue;
-                    let idx = tempBoard.findIndex(l => l.char === char);
-                    if(idx !== -1) {
-                        score += tempBoard[idx].value;
-                        tempBoard.splice(idx, 1);
-                    } else {
-                        error = true; break;
+                    for (let char of word) {
+                        if (char === ' ') continue;
+                        
+                        let idx = tempBoard.findIndex(l => l.letter === char || l.char === char);
+                        
+                        if (idx !== -1) {
+                            score += tempBoard[idx].value;
+                            tempBoard.splice(idx, 1);
+                        } else {
+                            error = true; 
+                            break;
+                        }
                     }
-                }
 
-                if(error) {
-                    errDiv.classList.remove('hidden');
-                    currentCalculatedScore = 0;
-                } else {
-                    errDiv.classList.add('hidden');
-                    currentCalculatedScore = isValidToggle ? score : 0;
-                }
-                dispScore.innerText = currentCalculatedScore;
+                    if (error) {
+                        errDiv.classList.remove('hidden');
+                        currentCalculatedScore = 0;
+                    } else {
+                        errDiv.classList.add('hidden');
+                        currentCalculatedScore = score; 
+                    }
+                    
+                    if (dispScore) dispScore.innerText = currentCalculatedScore;
+                });
             }
-
+            
             if(inpWord) inpWord.oninput = updateCorrectionLive;
             //if(btnYes) btnYes.onclick = () => { isValidToggle=true; btnYes.style.opacity=1; btnNo.style.opacity=0.5; updateCorrectionLive(); };
             //if(btnNo) btnNo.onclick = () => { isValidToggle=false; btnNo.style.opacity=1; btnYes.style.opacity=0.5; updateCorrectionLive(); };
