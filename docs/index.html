@@ -177,10 +177,10 @@
             overflow: hidden;
         }
         .player-badge.active {
-            transform: scale(1.05);
+            /* transform: scale(1.05); */
             box-shadow: var(--glow);
-            /* ELIMINA la riga: border-color: var(--accent-color) !important; */
             animation: pulse-glow 2s infinite;
+            border: 2px solid var(--text-color); 
         }
         .player-badge .name { font-weight: bold; font-size: 1.2rem; }
         .player-badge .score { font-size: 1.5rem; font-weight: 900; }
@@ -229,15 +229,15 @@
 
         /* Modificatore per l'overlay di correzione */
         .correction-overlay {
-            position: relative;
-            height: auto;
-            background: transparent;
-            backdrop-filter: none;
-            -webkit-backdrop-filter: none;
-            padding: 3rem 0; 
-            width: 100%;
+            position: relative !important;
+            height: auto !important;
+            background: transparent !important;
+            backdrop-filter: none !important;
+            -webkit-backdrop-filter: none !important;
+            padding: 2rem 1rem 4rem 1rem;
             display: flex;
-            justify-content: center; 
+            justify-content: center;
+            align-items: flex-start;
         }
 
         /* Utilities */
@@ -806,7 +806,7 @@
 
                 for(let char of word) {
                     if(char === ' ') continue;
-                    let idx = tempBoard.findIndex(l => l.letter === char);
+                    let idx = tempBoard.findIndex(l => l.char === char);
                     if(idx !== -1) {
                         score += tempBoard[idx].value;
                         tempBoard.splice(idx, 1);
