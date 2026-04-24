@@ -232,29 +232,24 @@
             top: 0; left: 0;
             width: 100%;
             height: 100%;
-            background: transparent !important; /* Rimuove lo sfondo scuro */
-            backdrop-filter: none !important;    /* RIMUOVE IL BLUR DALLE LETTERE */
-            -webkit-backdrop-filter: none !important;
+            background: rgba(0,0,0,0.2) !important; /* Uno strato leggerissimo per staccare dal fondo */
+            backdrop-filter: none !important;      /* RIMUOVE IL BLUR DALLE LETTERE */
             display: flex !important;
             justify-content: center !important;
-            align-items: flex-end !important;    /* Spinge il pannello in fondo */
-            padding-bottom: 20px !important;     /* Distanza dal bordo basso */
-            z-index: 10000 !important;           /* Sopra a tutto */
-            pointer-events: none;                /* Permette di cliccare "attraverso" lo spazio vuoto */
+            align-items: flex-end !important;    /* Lo spinge in basso */
+            padding-bottom: 20px !important;
+            z-index: 9999 !important;
         }
         
-        /* 2. Rendi il riquadro della correzione un vero pannello flottante */
         .correction-overlay .modal-content {
-            width: 90% !important;
-            max-width: 400px !important;
-            pointer-events: auto;                /* Riabilita i click solo sul pannello */
-            background: rgba(255, 255, 255, 0.85) !important;
-            backdrop-filter: blur(10px) !important; /* Il blur rimane SOLO dentro il pannello */
-            -webkit-backdrop-filter: blur(10px) !important;
-            border: 1px solid rgba(255, 255, 255, 0.3) !important;
-            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3) !important;
-            border-radius: 20px !important;
-            margin: 0 !important;
+            width: 92% !important;
+            max-width: 450px !important;
+            background: var(--card-bg) !important; /* Usa il colore del tema */
+            backdrop-filter: blur(15px) !important; /* Il blur resta SOLO dentro il pannello */
+            border: 1px solid var(--card-border) !important;
+            box-shadow: 0 -5px 25px rgba(0,0,0,0.2) !important;
+            border-radius: 24px !important;
+            overflow: hidden;
         }
         
         /* 3. Evita che il body venga sfocato quando questa modale è aperta */
@@ -321,7 +316,12 @@
                 points: "pt",
                 round: "Round",
                 target: "Obiettivo:",
-                hardReset: "Cancella tutti i dati salvati"
+                hardReset: "Cancella tutti i dati salvati",
+                correction_title: "Correzione",
+                enter_word: "Inserisci la parola composta:",
+                invalid_word: "Lettere non disponibili o non valide!",
+                score_est: "Punteggio stimato:",
+                confirm_word: "CONFERMA PAROLA"
             },
             en: {
                 title: "LexiClash: Street Edition",
@@ -360,7 +360,12 @@
                 points: "pts",
                 round: "Round",
                 target: "Target:",
-                hardReset: "Delete all saved data"
+                hardReset: "Delete all saved data",
+                correction_title: "Correction",
+                enter_word: "Enter the word composed:",
+                invalid_word: "Letters not available or invalid!",
+                score_est: "Estimated Score:",
+                confirm_word: "CONFIRM WORD"
             }
         };
 
@@ -660,34 +665,32 @@
                 document.querySelectorAll('.letter-card').forEach(c => c.classList.add('flipped'));
             }, 100);
 
-            return `
-        <div class="correction-overlay">
-            <div class="modal-content animate-pop">
-                <div class="p-4">
-                    <h3 class="text-xl font-bold text-accent mb-2">${p.name}</h3>
-                    <p class="text-sm opacity-75 mb-4">Inserisci la parola composta:</p>
-                    
-                    <input type="text" id="input-word" 
-                        class="w-full bg-white/50 border-2 border-accent/30 rounded-xl p-3 text-center text-2xl font-bold tracking-widest uppercase focus:border-accent outline-none mb-3"
-                        placeholder="..." autofocus>
-                    
-                    <div id="word-error" class="text-danger text-xs font-bold mb-2 hidden">
-                         ⚠️ Lettere non disponibili o non valide!
+           return `
+                <div class="correction-overlay">
+                    <div class="modal-content animate-pop p-5">
+                        <h3 class="text-xl font-bold text-accent mb-1">${p.name}: ${t('correction_title')}</h3>
+                        <p class="text-sm opacity-75 mb-4">${t('enter_word')}</p>
+                        
+                        <input type="text" id="input-word" 
+                            class="w-full bg-white/50 dark:bg-black/20 border-2 border-accent/30 rounded-xl p-3 text-center text-2xl font-bold tracking-widest uppercase focus:border-accent outline-none mb-2"
+                            placeholder="..." autofocus>
+                        
+                        <div id="word-error" class="text-danger text-xs font-bold mb-3 hidden text-center">
+                             ⚠️ ${t('invalid_word')}
+                        </div>
+        
+                        <div class="flex justify-between items-center bg-accent/10 rounded-xl p-4 mb-4">
+                            <span class="text-sm font-medium">${t('score_est')}</span>
+                            <span id="display-score" class="text-2xl font-black text-accent">0</span>
+                        </div>
+        
+                        <button id="btn-confirm-score" class="w-full bg-accent text-white font-bold py-4 rounded-xl shadow-lg active:scale-95 transition-all">
+                            ${t('confirm_word')}
+                        </button>
                     </div>
-
-                    <div class="flex justify-between items-center bg-accent/10 rounded-xl p-3 mb-4">
-                        <span class="text-sm font-medium">Punteggio stimato:</span>
-                        <span id="display-score" class="text-2xl font-black text-accent">0</span>
-                    </div>
-
-                    <button id="btn-confirm-score" class="w-full bg-accent hover:bg-accent-hover text-white font-bold py-3 rounded-xl transition-all shadow-lg active:scale-95">
-                        CONFERMA PAROLA
-                    </button>
                 </div>
-            </div>
-        </div>
-    `;
-}
+            `;
+        }
 
         function viewSummary() {
             // Sort by totalScore desc
