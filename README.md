@@ -1,7 +1,12 @@
 <div align="center">
 <h1>🏙️ LexiClash: Street Edition 🔠</h1>
 
+[![Codacy Badge](https://app.codacy.com/project/badge/Grade/3ece2b8c4faf4baeb1614c6d5b10c07c)](https://app.codacy.com/gh/R0mb0/LexiClash_Street_Edition/dashboard?utm_source=gh&utm_medium=referral&utm_content=&utm_campaign=Badge_grade)
+[![pages-build-deployment](https://github.com/R0mb0/LexiClash_Street_Edition/actions/workflows/pages/pages-build-deployment/badge.svg)](https://github.com/R0mb0/LexiClash_Street_Edition/actions/workflows/pages/pages-build-deployment)
+[![Maintenance](https://img.shields.io/badge/Maintained%3F-yes-green.svg)](https://github.com/R0mb0/LexiClash_Street_Edition)
+[![Open Source Love svg3](https://badges.frapsoft.com/os/v3/open-source.svg?v=103)](https://github.com/R0mb0/LexiClash_Street_Edition)
 [![MIT](https://img.shields.io/badge/License-MIT-blue.svg)](https://opensource.org/license/mit)
+[![Donate](https://img.shields.io/badge/PayPal-Donate%20to%20Author-blue.svg)](http://paypal.me/R0mb0)
 
 <p>
 A high-stakes, fast-paced word puzzle game inspired by classic British game shows. Features "Frizzy Rules" with hidden letter values, strategic point spending for extra letters, and a vibrant, responsive UI. Supports up to 10 players with full state persistence. Perfect for parties and competitive nerds! 🔥
