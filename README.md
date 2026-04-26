@@ -9,10 +9,12 @@ A high-stakes, fast-paced word puzzle game inspired by classic British game show
 
 ## [👉 Click here to play the game! 👈](https://r0mb0.github.io/LexiClash_Street_Edition/)
 
+[![01.png](https://github.com/R0mb0/LexiClash_Street_Edition/blob/main/Readme_imgs/01.png)](https://github.com/R0mb0/LexiClash_Street_Edition)
+[![02.png](https://github.com/R0mb0/LexiClash_Street_Edition/blob/main/Readme_imgs/02.png)](https://github.com/R0mb0/LexiClash_Street_Edition)
+[![03.png](https://github.com/R0mb0/LexiClash_Street_Edition/blob/main/Readme_imgs/03.png)](https://github.com/R0mb0/LexiClash_Street_Edition)
+[![04.png](https://github.com/R0mb0/LexiClash_Street_Edition/blob/main/Readme_imgs/04.png)](https://github.com/R0mb0/LexiClash_Street_Edition)
+
 </div>
-
-Image :)
-
 <hr>
 
 <h2>🚀 Features</h2>
