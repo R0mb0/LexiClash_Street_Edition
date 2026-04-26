@@ -58,6 +58,12 @@ Image :)
 <li>Play around with the <code>config.js</code> or the dictionary arrays to add your own custom letters or rules!</li>
 </ol>
 
+<h2>⚠️ Troubleshooting: Hard Reset</h2>
+<p>
+  The game automatically saves your progress in your browser's local memory so you never lose a match if you accidentally close the tab. <br><br>
+  However, if you want to completely start over from scratch during an unfinished game and the <strong>Hard Reset</strong> button is not visible on the main screen, you can easily force a clean slate. Simply go to your browser settings and <strong>clear the cookies and site data</strong> (specifically Local Storage) for this page. Refresh the window, and you'll be back to the starting line!
+</p>
+
 <br>
 
 <div align="center">
