@@ -720,43 +720,53 @@
     
     if (!input || !displayScore) return;
 
-    const word = input.value.toUpperCase().trim();
+    // 1. Puliamo la parola da qualsiasi spazio o carattere strano
+    const word = input.value.toUpperCase().replace(/[^A-Z]/g, '');
     
-    // 1. Lettura "Antiproiettile" del tabellone: copre tutti i nomi di variabili possibili!
-    const availableLetters = state.board.letters
-        .filter(l => l.flipped || l.isFlipped || l.revealed || l.visible || l.active)
-        .map(l => (l.char || l.letter || l.lettera || l.val || '').toUpperCase().trim());
+    // 2. Cerchiamo dove sono salvate le carte (copertura totale)
+    const boardArray = state.board.letters || state.board.cards || state.letters || [];
     
-    // DEBUG: Stampa nella console cosa vede il PC (premi F12 nel browser per vederlo)
-    console.log("Lettere trovate sul tabellone:", availableLetters);
+    // 3. Peschiamo sia le carte girate che quelle 'matched', pulendo la lettera
+    const availableLetters = boardArray
+        .filter(l => l.flipped || l.matched || l.isFlipped || l.scoperta || l.girata || l.visible || l.active)
+        .map(l => {
+            let rawChar = l.char || l.letter || l.lettera || l.val || '';
+            return rawChar.toString().replace(/[^A-Z]/g, '').toUpperCase();
+        });
     
     let tempLetters = [...availableLetters];
     let totalScore = 0;
     let isValid = true;
 
+    // 4. Dizionario di sicurezza
+    const dictionary = config.letters[state.lang] || config.letters['IT'] || [];
+
     for (let char of word) {
-        if (char === ' ') continue; 
+        if (!char) continue; 
         
         const index = tempLetters.indexOf(char);
         if (index > -1) {
-            // 2. Lettura sicura del dizionario (cerca sia char che letter)
-            const letterDef = config.letters[state.lang].find(l => 
-                (l.char || l.letter || '').toUpperCase().trim() === char
-            );
-            
-            // 3. Prende i punti sia se si chiamano 'points' sia se si chiamano 'value'
-            const pts = letterDef ? (letterDef.points !== undefined ? letterDef.points : letterDef.value) : 0;
-            totalScore += pts; 
-            
+            // Rimuoviamo la lettera disponibile per non usarla due volte
             tempLetters.splice(index, 1);
+            
+            // Cerchiamo i punti nel dizionario, pulendo anche qui i caratteri
+            const letterDef = dictionary.find(l => {
+                let rawDictChar = l.char || l.letter || '';
+                return rawDictChar.toString().replace(/[^A-Z]/g, '').toUpperCase() === char;
+            });
+            
+            // Assegniamo i punti (o 0 se c'è un'anomalia estrema)
+            const pts = letterDef ? (letterDef.points !== undefined ? letterDef.points : (letterDef.value || 0)) : 0;
+            totalScore += pts; 
         } else {
             isValid = false;
-            break;
+            break; // Lettera mancante!
         }
     }
 
     displayScore.innerText = totalScore;
 
+    // 5. Aggiornamento Visivo
     if (word.length > 0 && !isValid) {
         errorDiv.classList.remove('hidden');
         displayScore.style.color = 'var(--danger)';
@@ -896,29 +906,34 @@
         }
 
         // 2. Click sul tasto conferma
-        // 2. Click sul tasto conferma
         if (btnConfirm && inpWord) {
             btnConfirm.onclick = () => {
-                const word = inpWord.value.toUpperCase().trim();
+                const word = inpWord.value.toUpperCase().replace(/[^A-Z]/g, '');
                 if (!word) return;
 
-                // Lettura "Antiproiettile" anche qui
-                const available = state.board.letters
-                    .filter(l => l.flipped || l.isFlipped || l.revealed || l.visible || l.active)
-                    .map(l => (l.char || l.letter || l.lettera || l.val || '').toUpperCase().trim());
+                const boardArray = state.board.letters || state.board.cards || state.letters || [];
+                
+                const available = boardArray
+                    .filter(l => l.flipped || l.matched || l.isFlipped || l.scoperta || l.girata || l.visible || l.active)
+                    .map(l => {
+                        let rawChar = l.char || l.letter || l.lettera || l.val || '';
+                        return rawChar.toString().replace(/[^A-Z]/g, '').toUpperCase();
+                    });
                     
                 let temp = [...available];
                 let isValid = true;
                 let score = 0;
+                
+                const dictionary = config.letters[state.lang] || config.letters['IT'] || [];
 
                 for (let c of word) {
-                    if (c === ' ') continue;
                     const idx = temp.indexOf(c);
                     if (idx > -1) {
-                        const letterDef = config.letters[state.lang].find(l => 
-                            (l.char || l.letter || '').toUpperCase().trim() === c
-                        );
-                        score += letterDef ? (letterDef.points !== undefined ? letterDef.points : letterDef.value) : 0;
+                        const letterDef = dictionary.find(l => {
+                            let rawDictChar = l.char || l.letter || '';
+                            return rawDictChar.toString().replace(/[^A-Z]/g, '').toUpperCase() === c;
+                        });
+                        score += letterDef ? (letterDef.points !== undefined ? letterDef.points : (letterDef.value || 0)) : 0;
                         temp.splice(idx, 1);
                     } else {
                         isValid = false;
@@ -927,14 +942,18 @@
                 }
 
                 if (!isValid) {
-                    alert(t.errNoLetters);
+                    alert(t.errNoLetters || "Lettere mancanti sul tabellone!");
                     return;
                 }
 
-                // Assegna il punteggio e chiudi modale
+                // Applica punti e chiude
                 state.players[state.tempCorrectionIndex].score += score;
                 state.tempCorrectionIndex = null;
                 state.save();
+                
+                // Nascondi la modale!
+                document.getElementById('modal-correction').classList.add('hidden');
+                
                 render();
             };
         }
