@@ -732,11 +732,16 @@
 
     // 2. Controlliamo se ogni lettera scritta è disponibile
     for (let char of word) {
+        if (char === ' ') continue; // Ignora gli spazi se digiti più parole
+        
         const index = tempLetters.indexOf(char);
         if (index > -1) {
-            // Trovata! Sommiamo i punti (cerchiamo il valore nel config o nel board)
+            // Trovata! Sommiamo i punti
             const letterObj = state.board.letters.find(l => l.char === char);
-            totalScore += letterObj ? letterObj.points : 0;
+            
+            // CORREZIONE CRITICA: usiamo .value invece di .points
+            totalScore += letterObj ? letterObj.value : 0; 
+            
             tempLetters.splice(index, 1); // Rimuoviamo la lettera usata per non duplicarla
         } else {
             isValid = false;
@@ -869,14 +874,59 @@
                 render();
             };
 
-            // Correction Modal Logic
-            const inputWord = document.getElementById('input-word');
-            if (inputWord) {
-                inputWord.addEventListener('input', updateCorrectionLive);
-                inputWord.addEventListener('keypress', (e) => {
-                    if (e.key === 'Enter') document.getElementById('btn-confirm-score')?.click();
-                });
-            }
+           // Correction Logic
+        const inpWord = document.getElementById('input-word'); // <-- LA DEFINIAMO QUI, UNA SOLA VOLTA!
+        const btnConfirm = document.getElementById('btn-confirm-score');
+
+        // 1. Ascoltatori per l'aggiornamento in tempo reale e il tasto Invio
+        if (inpWord) {
+            inpWord.addEventListener('input', updateCorrectionLive);
+            
+            inpWord.addEventListener('keypress', (e) => {
+                if (e.key === 'Enter') {
+                    e.preventDefault();
+                    if(btnConfirm) btnConfirm.click();
+                }
+            });
+        }
+
+        // 2. Click sul tasto conferma
+        if (btnConfirm && inpWord) {
+            btnConfirm.onclick = () => {
+                const word = inpWord.value.toUpperCase().trim();
+                if (!word) return;
+
+                // Controlliamo che le lettere siano valide
+                const available = state.board.letters.filter(l => l.flipped).map(l => l.char);
+                let temp = [...available];
+                let isValid = true;
+                let score = 0;
+
+                for (let c of word) {
+                    if (c === ' ') continue; // Ignora gli spazi
+                    const idx = temp.indexOf(c);
+                    if (idx > -1) {
+                        score += state.board.letters.find(l => l.char === c).value;
+                        temp.splice(idx, 1);
+                    } else {
+                        isValid = false;
+                        break;
+                    }
+                }
+
+                if (!isValid) {
+                    alert(t.errNoLetters);
+                    return;
+                }
+
+                // Assegna il punteggio e chiudi modale
+                state.players[state.tempCorrectionIndex].score += score;
+                state.tempCorrectionIndex = null;
+                state.save();
+                render();
+            };
+        }
+            
             //const btnYes = document.getElementById('btn-valid-yes');
             //const btnNo = document.getElementById('btn-valid-no');
             const dispScore = document.getElementById('display-score');
