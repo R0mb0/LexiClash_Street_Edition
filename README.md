@@ -12,6 +12,17 @@
 A high-stakes, fast-paced word puzzle game inspired by classic British game shows. Features "Frizzy Rules" with hidden letter values, strategic point spending for extra letters, and a vibrant, responsive UI. Supports up to 10 players with full state persistence. Perfect for parties and competitive nerds! 🔥
 </p>
 
+<div align="center">
+  <a href="http://paypal.me/R0mb0">
+    <picture>
+      <source media="(prefers-color-scheme: dark)" srcset="https://github.com/R0mb0/Support_the_dev_badge/blob/main/Badge/SVG/Support_the_dev_badge_Dark.svg">
+      <source media="(prefers-color-scheme: light)" srcset="https://github.com/R0mb0/Support_the_dev_badge/blob/main/Badge/SVG/Support_the_dev_badge_Light.svg">
+      <img alt="Saved you time? Support the dev" src="https://github.com/R0mb0/Support_the_dev_badge/blob/main/Badge/SVG/Support_the_dev_badge_Default.svg">
+    </picture>
+  </a>
+</div>
+
+
 ## [👉 Click here to play the game! 👈](https://r0mb0.github.io/LexiClash_Street_Edition/)
 
 [![01.png](https://github.com/R0mb0/LexiClash_Street_Edition/blob/main/Readme_imgs/01.png)](https://github.com/R0mb0/LexiClash_Street_Edition)
