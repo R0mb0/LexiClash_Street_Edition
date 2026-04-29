@@ -722,34 +722,28 @@
 
     const word = input.value.toUpperCase();
     
-    // 1. Prendiamo le lettere attualmente disponibili sul tabellone
-    // Filtriamo solo quelle che sono state girate (flipped)
     const availableLetters = state.board.letters.filter(l => l.flipped).map(l => l.char);
     
     let tempLetters = [...availableLetters];
     let totalScore = 0;
     let isValid = true;
 
-    // 2. Controlliamo se ogni lettera scritta è disponibile
     for (let char of word) {
-        if (char === ' ') continue; // Ignora gli spazi se digiti più parole
+        if (char === ' ') continue; // Ignora gli spazi
         
         const index = tempLetters.indexOf(char);
         if (index > -1) {
-            // Trovata! Sommiamo i punti
-            const letterObj = state.board.letters.find(l => l.char === char);
+            // IL FIX È QUI: Andiamo a leggere il valore nel dizionario della lingua attuale!
+            const letterDef = config.letters[state.lang].find(l => l.char === char);
+            totalScore += letterDef ? letterDef.value : 0; 
             
-            // CORREZIONE CRITICA: usiamo .value invece di .points
-            totalScore += letterObj ? letterObj.value : 0; 
-            
-            tempLetters.splice(index, 1); // Rimuoviamo la lettera usata per non duplicarla
+            tempLetters.splice(index, 1);
         } else {
             isValid = false;
             break;
         }
     }
 
-    // 3. Aggiorniamo l'interfaccia
     displayScore.innerText = totalScore;
 
     if (word.length > 0 && !isValid) {
@@ -906,7 +900,10 @@
                     if (c === ' ') continue; // Ignora gli spazi
                     const idx = temp.indexOf(c);
                     if (idx > -1) {
-                        score += state.board.letters.find(l => l.char === c).value;
+                        // IL FIX È ANCHE QUI: Leggiamo i punti dal dizionario e non dal tabellone
+                        const letterDef = config.letters[state.lang].find(l => l.char === c);
+                        score += letterDef ? letterDef.value : 0;
+                        
                         temp.splice(idx, 1);
                     } else {
                         isValid = false;
