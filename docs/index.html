@@ -712,6 +712,49 @@
 
             return layout;
         }
+
+        function updateCorrectionLive() {
+    const input = document.getElementById('input-word');
+    const displayScore = document.getElementById('display-score');
+    const errorDiv = document.getElementById('word-error');
+    
+    if (!input || !displayScore) return;
+
+    const word = input.value.toUpperCase();
+    
+    // 1. Prendiamo le lettere attualmente disponibili sul tabellone
+    // Filtriamo solo quelle che sono state girate (flipped)
+    const availableLetters = state.board.letters.filter(l => l.flipped).map(l => l.char);
+    
+    let tempLetters = [...availableLetters];
+    let totalScore = 0;
+    let isValid = true;
+
+    // 2. Controlliamo se ogni lettera scritta è disponibile
+    for (let char of word) {
+        const index = tempLetters.indexOf(char);
+        if (index > -1) {
+            // Trovata! Sommiamo i punti (cerchiamo il valore nel config o nel board)
+            const letterObj = state.board.letters.find(l => l.char === char);
+            totalScore += letterObj ? letterObj.points : 0;
+            tempLetters.splice(index, 1); // Rimuoviamo la lettera usata per non duplicarla
+        } else {
+            isValid = false;
+            break;
+        }
+    }
+
+    // 3. Aggiorniamo l'interfaccia
+    displayScore.innerText = totalScore;
+
+    if (word.length > 0 && !isValid) {
+        errorDiv.classList.remove('hidden');
+        displayScore.style.color = 'var(--danger)';
+    } else {
+        errorDiv.classList.add('hidden');
+        displayScore.style.color = 'var(--accent-color)';
+    }
+}
         
         function viewSummary() {
             // Sort by totalScore desc
@@ -827,7 +870,13 @@
             };
 
             // Correction Modal Logic
-            const inpWord = document.getElementById('input-word');
+            const inputWord = document.getElementById('input-word');
+            if (inputWord) {
+                inputWord.addEventListener('input', updateCorrectionLive);
+                inputWord.addEventListener('keypress', (e) => {
+                    if (e.key === 'Enter') document.getElementById('btn-confirm-score')?.click();
+                });
+            }
             //const btnYes = document.getElementById('btn-valid-yes');
             //const btnNo = document.getElementById('btn-valid-no');
             const dispScore = document.getElementById('display-score');
