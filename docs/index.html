@@ -720,22 +720,33 @@
     
     if (!input || !displayScore) return;
 
-    const word = input.value.toUpperCase();
+    const word = input.value.toUpperCase().trim();
     
-    const availableLetters = state.board.letters.filter(l => l.flipped).map(l => l.char);
+    // 1. Lettura "Antiproiettile" del tabellone: copre tutti i nomi di variabili possibili!
+    const availableLetters = state.board.letters
+        .filter(l => l.flipped || l.isFlipped || l.revealed || l.visible || l.active)
+        .map(l => (l.char || l.letter || l.lettera || l.val || '').toUpperCase().trim());
+    
+    // DEBUG: Stampa nella console cosa vede il PC (premi F12 nel browser per vederlo)
+    console.log("Lettere trovate sul tabellone:", availableLetters);
     
     let tempLetters = [...availableLetters];
     let totalScore = 0;
     let isValid = true;
 
     for (let char of word) {
-        if (char === ' ') continue; // Ignora gli spazi
+        if (char === ' ') continue; 
         
         const index = tempLetters.indexOf(char);
         if (index > -1) {
-            // IL FIX È QUI: Andiamo a leggere il valore nel dizionario della lingua attuale!
-            const letterDef = config.letters[state.lang].find(l => l.char === char);
-            totalScore += letterDef ? letterDef.points : 0; 
+            // 2. Lettura sicura del dizionario (cerca sia char che letter)
+            const letterDef = config.letters[state.lang].find(l => 
+                (l.char || l.letter || '').toUpperCase().trim() === char
+            );
+            
+            // 3. Prende i punti sia se si chiamano 'points' sia se si chiamano 'value'
+            const pts = letterDef ? (letterDef.points !== undefined ? letterDef.points : letterDef.value) : 0;
+            totalScore += pts; 
             
             tempLetters.splice(index, 1);
         } else {
@@ -885,25 +896,29 @@
         }
 
         // 2. Click sul tasto conferma
+        // 2. Click sul tasto conferma
         if (btnConfirm && inpWord) {
             btnConfirm.onclick = () => {
                 const word = inpWord.value.toUpperCase().trim();
                 if (!word) return;
 
-                // Controlliamo che le lettere siano valide
-                const available = state.board.letters.filter(l => l.flipped).map(l => l.char);
+                // Lettura "Antiproiettile" anche qui
+                const available = state.board.letters
+                    .filter(l => l.flipped || l.isFlipped || l.revealed || l.visible || l.active)
+                    .map(l => (l.char || l.letter || l.lettera || l.val || '').toUpperCase().trim());
+                    
                 let temp = [...available];
                 let isValid = true;
                 let score = 0;
 
                 for (let c of word) {
-                    if (c === ' ') continue; // Ignora gli spazi
+                    if (c === ' ') continue;
                     const idx = temp.indexOf(c);
                     if (idx > -1) {
-                        // IL FIX È ANCHE QUI: Leggiamo i punti dal dizionario e non dal tabellone
-                        const letterDef = config.letters[state.lang].find(l => l.char === c);
-                        score += letterDef ? letterDef.points : 0;
-                        
+                        const letterDef = config.letters[state.lang].find(l => 
+                            (l.char || l.letter || '').toUpperCase().trim() === c
+                        );
+                        score += letterDef ? (letterDef.points !== undefined ? letterDef.points : letterDef.value) : 0;
                         temp.splice(idx, 1);
                     } else {
                         isValid = false;
