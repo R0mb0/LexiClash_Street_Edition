@@ -735,7 +735,7 @@
         if (index > -1) {
             // IL FIX È QUI: Andiamo a leggere il valore nel dizionario della lingua attuale!
             const letterDef = config.letters[state.lang].find(l => l.char === char);
-            totalScore += letterDef ? letterDef.value : 0; 
+            totalScore += letterDef ? letterDef.points : 0; 
             
             tempLetters.splice(index, 1);
         } else {
@@ -902,7 +902,7 @@
                     if (idx > -1) {
                         // IL FIX È ANCHE QUI: Leggiamo i punti dal dizionario e non dal tabellone
                         const letterDef = config.letters[state.lang].find(l => l.char === c);
-                        score += letterDef ? letterDef.value : 0;
+                        score += letterDef ? letterDef.points : 0;
                         
                         temp.splice(idx, 1);
                     } else {
