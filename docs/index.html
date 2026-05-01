@@ -714,62 +714,59 @@
         }
 
         function updateCorrectionLive() {
-    const input = document.getElementById('input-word');
-    const displayScore = document.getElementById('display-score');
-    const errorDiv = document.getElementById('word-error');
-    
-    if (!input || !displayScore) return;
+            const input = document.getElementById('input-word');
+            const displayScore = document.getElementById('display-score');
+            const errorDiv = document.getElementById('word-error');
+            
+            if (!input || !displayScore) return;
 
-    const word = input.value.toUpperCase().replace(/[^A-Z]/g, '');
-    const boardArray = state.board.letters || state.board.cards || state.letters || [];
-    
-    const availableLetters = boardArray
-        .filter(l => l.flipped || l.matched || l.isFlipped || l.scoperta || l.girata || l.visible || l.active)
-        .map(l => {
-            let rawChar = l.char || l.letter || l.lettera || l.val || '';
-            return rawChar.toString().replace(/[^A-Z]/g, '').toUpperCase();
-        });
-    
-    let tempLetters = [...availableLetters];
-    let totalScore = 0;
-    let isValid = true;
-    const dictionary = config.letters[state.lang] || config.letters['IT'] || [];
+            const word = input.value.toUpperCase().replace(/[^A-Z]/g, '');
+            const boardArray = state.board.letters || state.board.cards || state.letters || [];
+            
+            // CONTEGGIO SEMPLIFICATO: prendiamo tutte le lettere valide sul tabellone
+            const availableLetters = boardArray
+                .map(l => (l.char || l.letter || l.lettera || l.val || '').toString().toUpperCase().trim())
+                .filter(char => char !== "");
+            
+            let tempLetters = [...availableLetters];
+            let totalScore = 0;
+            let isValid = true;
+            const dictionary = config.letters[state.lang] || config.letters['IT'] || [];
 
-    for (let char of word) {
-        if (!char) continue; 
-        
-        const index = tempLetters.indexOf(char);
-        if (index > -1) {
-            tempLetters.splice(index, 1);
-            const letterDef = dictionary.find(l => {
-                let rawDictChar = l.char || l.letter || '';
-                return rawDictChar.toString().replace(/[^A-Z]/g, '').toUpperCase() === char;
-            });
-            const pts = letterDef ? (letterDef.points !== undefined ? letterDef.points : (letterDef.value || 0)) : 0;
-            totalScore += pts; 
-        } else {
-            isValid = false;
-            break;
+            for (let char of word) {
+                if (!char) continue; 
+                const index = tempLetters.indexOf(char);
+                if (index > -1) {
+                    tempLetters.splice(index, 1);
+                    const letterDef = dictionary.find(l => {
+                        let c = l.char || l.letter || '';
+                        return c.toString().toUpperCase().trim() === char;
+                    });
+                    totalScore += letterDef ? (letterDef.points || letterDef.value || 0) : 0;
+                } else {
+                    isValid = false;
+                    break;
+                }
+            }
+
+            // RADDOPPIO: Confronta lunghezza parola con numero lettere sul tabellone
+            const isAllLettersUsed = isValid && word.length > 0 && word.length === availableLetters.length;
+            
+            if (isAllLettersUsed) {
+                const finalScore = totalScore * 2;
+                displayScore.innerHTML = `${finalScore} <span style="font-size: 0.6em; color: var(--warning); font-weight: bold;">(x2 BONUS!)</span>`;
+                displayScore.style.color = 'var(--warning)';
+            } else {
+                displayScore.innerText = totalScore;
+                displayScore.style.color = isValid ? 'var(--accent-color)' : 'var(--danger)';
+            }
+
+            if (word.length > 0 && !isValid) {
+                errorDiv.classList.remove('hidden');
+            } else {
+                errorDiv.classList.add('hidden');
+            }
         }
-    }
-
-    // === IL RADDOPPIO VISIVO ===
-    const isAllLettersUsed = isValid && word.length > 0 && word.length === availableLetters.length;
-    if (isAllLettersUsed) {
-        totalScore *= 2; 
-        displayScore.innerHTML = `${totalScore} <span style="font-size: 0.5em; color: var(--warning);">(x2 BONUS!)</span>`;
-    } else {
-        displayScore.innerText = totalScore;
-    }
-
-    if (word.length > 0 && !isValid) {
-        errorDiv.classList.remove('hidden');
-        displayScore.style.color = 'var(--danger)';
-    } else {
-        errorDiv.classList.add('hidden');
-        displayScore.style.color = 'var(--accent-color)';
-    }
-}
         
         function viewSummary() {
             // Sort by totalScore desc
@@ -908,26 +905,19 @@
 
                 const boardArray = state.board.letters || state.board.cards || state.letters || [];
                 const available = boardArray
-                    .filter(l => l.flipped || l.matched || l.isFlipped || l.scoperta || l.girata || l.visible || l.active)
-                    .map(l => {
-                        let rawChar = l.char || l.letter || l.lettera || l.val || '';
-                        return rawChar.toString().replace(/[^A-Z]/g, '').toUpperCase();
-                    });
+                    .map(l => (l.char || l.letter || l.lettera || l.val || '').toString().toUpperCase().trim())
+                    .filter(char => char !== "");
                     
                 let temp = [...available];
                 let isValid = true;
                 let score = 0;
-                
                 const dictionary = config.letters[state.lang] || config.letters['IT'] || [];
 
                 for (let c of word) {
                     const idx = temp.indexOf(c);
                     if (idx > -1) {
-                        const letterDef = dictionary.find(l => {
-                            let rawDictChar = l.char || l.letter || '';
-                            return rawDictChar.toString().replace(/[^A-Z]/g, '').toUpperCase() === c;
-                        });
-                        score += letterDef ? (letterDef.points !== undefined ? letterDef.points : (letterDef.value || 0)) : 0;
+                        const letterDef = dictionary.find(l => (l.char || l.letter || '').toString().toUpperCase().trim() === c);
+                        score += letterDef ? (letterDef.points || letterDef.value || 0) : 0;
                         temp.splice(idx, 1);
                     } else {
                         isValid = false;
@@ -936,22 +926,20 @@
                 }
 
                 if (!isValid) {
-                    alert(t.errNoLetters || "Lettere mancanti sul tabellone!");
+                    alert("Lettere mancanti sul tabellone!");
                     return;
                 }
 
-                // === RADDOPPIO REALE DEI PUNTI ===
-                // Se la lunghezza della parola è uguale al numero di lettere sul tavolo: raddoppia!
+                // APPLICA RADDOPPIO SE HA USATO TUTTO
                 if (word.length === available.length) {
-                    score *= 2; 
+                    score *= 2;
                 }
 
-                // === IL TUO SALVATAGGIO ORIGINALE (INTATTO E SICURO) ===
+                // SALVATAGGIO PUNTEGGIO (Usa la tua variabile originale .score)
                 state.players[state.tempCorrectionIndex].score += score;
                 state.tempCorrectionIndex = null;
                 state.save();
                 
-                // Chiude la modale e aggiorna la grafica
                 const modal = document.getElementById('modal-correction');
                 if (modal) modal.classList.add('hidden');
                 render();
