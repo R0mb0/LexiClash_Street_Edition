@@ -720,13 +720,9 @@
     
     if (!input || !displayScore) return;
 
-    // 1. Puliamo la parola da qualsiasi spazio o carattere strano
     const word = input.value.toUpperCase().replace(/[^A-Z]/g, '');
-    
-    // 2. Cerchiamo dove sono salvate le carte (copertura totale)
     const boardArray = state.board.letters || state.board.cards || state.letters || [];
     
-    // 3. Peschiamo sia le carte girate che quelle 'matched', pulendo la lettera
     const availableLetters = boardArray
         .filter(l => l.flipped || l.matched || l.isFlipped || l.scoperta || l.girata || l.visible || l.active)
         .map(l => {
@@ -737,8 +733,6 @@
     let tempLetters = [...availableLetters];
     let totalScore = 0;
     let isValid = true;
-
-    // 4. Dizionario di sicurezza
     const dictionary = config.letters[state.lang] || config.letters['IT'] || [];
 
     for (let char of word) {
@@ -746,27 +740,28 @@
         
         const index = tempLetters.indexOf(char);
         if (index > -1) {
-            // Rimuoviamo la lettera disponibile per non usarla due volte
             tempLetters.splice(index, 1);
-            
-            // Cerchiamo i punti nel dizionario, pulendo anche qui i caratteri
             const letterDef = dictionary.find(l => {
                 let rawDictChar = l.char || l.letter || '';
                 return rawDictChar.toString().replace(/[^A-Z]/g, '').toUpperCase() === char;
             });
-            
-            // Assegniamo i punti (o 0 se c'è un'anomalia estrema)
             const pts = letterDef ? (letterDef.points !== undefined ? letterDef.points : (letterDef.value || 0)) : 0;
             totalScore += pts; 
         } else {
             isValid = false;
-            break; // Lettera mancante!
+            break;
         }
     }
 
-    displayScore.innerText = totalScore;
+    // === IL RADDOPPIO VISIVO ===
+    const isAllLettersUsed = isValid && word.length > 0 && word.length === availableLetters.length;
+    if (isAllLettersUsed) {
+        totalScore *= 2; 
+        displayScore.innerHTML = `${totalScore} <span style="font-size: 0.5em; color: var(--warning);">(x2 BONUS!)</span>`;
+    } else {
+        displayScore.innerText = totalScore;
+    }
 
-    // 5. Aggiornamento Visivo
     if (word.length > 0 && !isValid) {
         errorDiv.classList.remove('hidden');
         displayScore.style.color = 'var(--danger)';
@@ -912,7 +907,6 @@
                 if (!word) return;
 
                 const boardArray = state.board.letters || state.board.cards || state.letters || [];
-                
                 const available = boardArray
                     .filter(l => l.flipped || l.matched || l.isFlipped || l.scoperta || l.girata || l.visible || l.active)
                     .map(l => {
@@ -946,14 +940,20 @@
                     return;
                 }
 
-                // Applica punti e chiude
+                // === RADDOPPIO REALE DEI PUNTI ===
+                // Se la lunghezza della parola è uguale al numero di lettere sul tavolo: raddoppia!
+                if (word.length === available.length) {
+                    score *= 2; 
+                }
+
+                // === IL TUO SALVATAGGIO ORIGINALE (INTATTO E SICURO) ===
                 state.players[state.tempCorrectionIndex].score += score;
                 state.tempCorrectionIndex = null;
                 state.save();
                 
-                // Nascondi la modale!
-                document.getElementById('modal-correction').classList.add('hidden');
-                
+                // Chiude la modale e aggiorna la grafica
+                const modal = document.getElementById('modal-correction');
+                if (modal) modal.classList.add('hidden');
                 render();
             };
         }
