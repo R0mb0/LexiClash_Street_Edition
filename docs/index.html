@@ -286,6 +286,23 @@
             position: fixed; top: 0; left: 0; width: 100%; height: 100%;
             pointer-events: none; z-index: 9999;
         }
+
+        /* Forza l'ombreggiatura luminosa su entrambi i pulsanti di pesca */
+        button[onclick*="drawLetter"], 
+        #btn-vowel, 
+        #btn-consonant,
+        .btn-draw {
+            box-shadow: 0 0 15px var(--accent-color) !important;
+            transition: all 0.3s ease;
+        }
+
+        button[onclick*="drawLetter"]:hover, 
+        #btn-vowel:hover, 
+        #btn-consonant:hover,
+        .btn-draw:hover {
+            box-shadow: 0 0 25px var(--accent-color) !important;
+            transform: translateY(-2px);
+        }
     </style>
 </head>
 <body>
@@ -721,12 +738,16 @@
             if (!input || !displayScore) return;
 
             const word = input.value.toUpperCase().replace(/[^A-Z]/g, '');
-            const boardArray = state.board.letters || state.board.cards || state.letters || [];
+            const rawBoard = state.board.letters || state.board.cards || state.board || state.letters || [];
             
-            // CONTEGGIO SEMPLIFICATO: prendiamo tutte le lettere valide sul tabellone
-            const availableLetters = boardArray
-                .map(l => (l.char || l.letter || l.lettera || l.val || '').toString().toUpperCase().trim())
-                .filter(char => char !== "");
+            // FILTRO ESTREMO: Prende solo ed esclusivamente i caratteri singoli (A-Z)
+            const availableLetters = rawBoard
+                .map(l => {
+                    if (!l) return '';
+                    let c = (typeof l === 'object') ? (l.char || l.letter || l.lettera || l.val || '') : l;
+                    return c.toString().toUpperCase().replace(/[^A-Z]/g, '');
+                })
+                .filter(char => char.length === 1); 
             
             let tempLetters = [...availableLetters];
             let totalScore = 0;
@@ -738,18 +759,15 @@
                 const index = tempLetters.indexOf(char);
                 if (index > -1) {
                     tempLetters.splice(index, 1);
-                    const letterDef = dictionary.find(l => {
-                        let c = l.char || l.letter || '';
-                        return c.toString().toUpperCase().trim() === char;
-                    });
-                    totalScore += letterDef ? (letterDef.points || letterDef.value || 0) : 0;
+                    const letterDef = dictionary.find(l => (l.char || l.letter || '').toString().toUpperCase().replace(/[^A-Z]/g, '') === char);
+                    totalScore += letterDef ? (letterDef.points !== undefined ? letterDef.points : (letterDef.value || 0)) : 0;
                 } else {
                     isValid = false;
                     break;
                 }
             }
 
-            // RADDOPPIO: Confronta lunghezza parola con numero lettere sul tabellone
+            // CONTROLLO RADDOPPIO
             const isAllLettersUsed = isValid && word.length > 0 && word.length === availableLetters.length;
             
             if (isAllLettersUsed) {
@@ -761,11 +779,8 @@
                 displayScore.style.color = isValid ? 'var(--accent-color)' : 'var(--danger)';
             }
 
-            if (word.length > 0 && !isValid) {
-                errorDiv.classList.remove('hidden');
-            } else {
-                errorDiv.classList.add('hidden');
-            }
+            if (word.length > 0 && !isValid) errorDiv.classList.remove('hidden');
+            else errorDiv.classList.add('hidden');
         }
         
         function viewSummary() {
@@ -903,11 +918,19 @@
                 const word = inpWord.value.toUpperCase().replace(/[^A-Z]/g, '');
                 if (!word) return;
 
-                const boardArray = state.board.letters || state.board.cards || state.letters || [];
-                const available = boardArray
-                    .map(l => (l.char || l.letter || l.lettera || l.val || '').toString().toUpperCase().trim())
-                    .filter(char => char !== "");
+                const rawBoard = state.board.letters || state.board.cards || state.board || state.letters || [];
+                const available = rawBoard
+                    .map(l => {
+                        if (!l) return '';
+                        let c = (typeof l === 'object') ? (l.char || l.letter || l.lettera || l.val || '') : l;
+                        return c.toString().toUpperCase().replace(/[^A-Z]/g, '');
+                    })
+                    .filter(char => char.length === 1);
                     
+                // LOG DI DEBUG (visibile premendo F12)
+                console.log("Lettere valide trovate sul tavolo:", available);
+                console.log("Lunghezza parola:", word.length, "Lunghezza tavolo:", available.length);
+
                 let temp = [...available];
                 let isValid = true;
                 let score = 0;
@@ -916,8 +939,8 @@
                 for (let c of word) {
                     const idx = temp.indexOf(c);
                     if (idx > -1) {
-                        const letterDef = dictionary.find(l => (l.char || l.letter || '').toString().toUpperCase().trim() === c);
-                        score += letterDef ? (letterDef.points || letterDef.value || 0) : 0;
+                        const letterDef = dictionary.find(l => (l.char || l.letter || '').toString().toUpperCase().replace(/[^A-Z]/g, '') === c);
+                        score += letterDef ? (letterDef.points !== undefined ? letterDef.points : (letterDef.value || 0)) : 0;
                         temp.splice(idx, 1);
                     } else {
                         isValid = false;
@@ -930,12 +953,13 @@
                     return;
                 }
 
-                // APPLICA RADDOPPIO SE HA USATO TUTTO
+                // APPLICA RADDOPPIO
                 if (word.length === available.length) {
+                    console.log("RADDOPPIO APPLICATO!");
                     score *= 2;
                 }
 
-                // SALVATAGGIO PUNTEGGIO (Usa la tua variabile originale .score)
+                // SALVATAGGIO
                 state.players[state.tempCorrectionIndex].score += score;
                 state.tempCorrectionIndex = null;
                 state.save();
