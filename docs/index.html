@@ -287,20 +287,23 @@
             pointer-events: none; z-index: 9999;
         }
 
-        /* Forza l'ombreggiatura luminosa su entrambi i pulsanti di pesca */
-        button[onclick*="drawLetter"], 
-        #btn-vowel, 
-        #btn-consonant,
-        .btn-draw {
+        /* Pulsante Vocale: Ombreggiatura Azzurra */
+        #btn-vowel {
             box-shadow: 0 0 15px var(--accent-color) !important;
             transition: all 0.3s ease;
         }
-
-        button[onclick*="drawLetter"]:hover, 
-        #btn-vowel:hover, 
-        #btn-consonant:hover,
-        .btn-draw:hover {
+        #btn-vowel:hover {
             box-shadow: 0 0 25px var(--accent-color) !important;
+            transform: translateY(-2px);
+        }
+
+        /* Pulsante Consonante: Ombreggiatura Arancione */
+        #btn-consonant {
+            box-shadow: 0 0 15px var(--warning) !important;
+            transition: all 0.3s ease;
+        }
+        #btn-consonant:hover {
+            box-shadow: 0 0 25px var(--warning) !important;
             transform: translateY(-2px);
         }
     </style>
@@ -738,49 +741,47 @@
             if (!input || !displayScore) return;
 
             const word = input.value.toUpperCase().replace(/[^A-Z]/g, '');
-            const rawBoard = state.board.letters || state.board.cards || state.board || state.letters || [];
+            // Prendiamo le lettere e i punti direttamente dal tavolo!
+            const boardLetters = state.board.letters || [];
             
-            // FILTRO ESTREMO: Prende solo ed esclusivamente i caratteri singoli (A-Z)
-            const availableLetters = rawBoard
-                .map(l => {
-                    if (!l) return '';
-                    let c = (typeof l === 'object') ? (l.char || l.letter || l.lettera || l.val || '') : l;
-                    return c.toString().toUpperCase().replace(/[^A-Z]/g, '');
-                })
-                .filter(char => char.length === 1); 
-            
-            let tempLetters = [...availableLetters];
+            let tempBoard = [...boardLetters];
             let totalScore = 0;
             let isValid = true;
-            const dictionary = config.letters[state.lang] || config.letters['IT'] || [];
 
             for (let char of word) {
                 if (!char) continue; 
-                const index = tempLetters.indexOf(char);
-                if (index > -1) {
-                    tempLetters.splice(index, 1);
-                    const letterDef = dictionary.find(l => (l.char || l.letter || '').toString().toUpperCase().replace(/[^A-Z]/g, '') === char);
-                    totalScore += letterDef ? (letterDef.points !== undefined ? letterDef.points : (letterDef.value || 0)) : 0;
+                let idx = tempBoard.findIndex(l => (l.letter || '').toUpperCase() === char);
+                
+                if (idx !== -1) {
+                    totalScore += tempBoard[idx].value || 0;
+                    tempBoard.splice(idx, 1);
                 } else {
                     isValid = false;
                     break;
                 }
             }
 
-            // CONTROLLO RADDOPPIO
-            const isAllLettersUsed = isValid && word.length > 0 && word.length === availableLetters.length;
+            // RADDOPPIO
+            const isAllLettersUsed = isValid && word.length > 0 && word.length === boardLetters.length;
             
-            if (isAllLettersUsed) {
-                const finalScore = totalScore * 2;
-                displayScore.innerHTML = `${finalScore} <span style="font-size: 0.6em; color: var(--warning); font-weight: bold;">(x2 BONUS!)</span>`;
-                displayScore.style.color = 'var(--warning)';
+            if (isValid) {
+                errorDiv.classList.add('hidden');
+                if (isAllLettersUsed) {
+                    const finalScore = totalScore * 2;
+                    displayScore.innerHTML = `${finalScore} <span style="font-size: 0.6em; color: var(--warning); font-weight: bold;">(x2 BONUS!)</span>`;
+                    displayScore.style.color = 'var(--warning)';
+                    displayScore.dataset.score = finalScore; // Salviamo il calcolo per il tasto "Conferma"
+                } else {
+                    displayScore.innerText = totalScore;
+                    displayScore.style.color = 'var(--accent-color)';
+                    displayScore.dataset.score = totalScore;
+                }
             } else {
-                displayScore.innerText = totalScore;
-                displayScore.style.color = isValid ? 'var(--accent-color)' : 'var(--danger)';
+                errorDiv.classList.remove('hidden');
+                displayScore.innerText = '0';
+                displayScore.style.color = 'var(--danger)';
+                displayScore.dataset.score = 0;
             }
-
-            if (word.length > 0 && !isValid) errorDiv.classList.remove('hidden');
-            else errorDiv.classList.add('hidden');
         }
         
         function viewSummary() {
@@ -897,78 +898,51 @@
             };
 
            // Correction Logic
-        const inpWord = document.getElementById('input-word'); // <-- LA DEFINIAMO QUI, UNA SOLA VOLTA!
-        const btnConfirm = document.getElementById('btn-confirm-score');
+            const inpWord = document.getElementById('input-word');
+            const btnConfirm = document.getElementById('btn-confirm-score');
 
-        // 1. Ascoltatori per l'aggiornamento in tempo reale e il tasto Invio
-        if (inpWord) {
-            inpWord.addEventListener('input', updateCorrectionLive);
-            
-            inpWord.addEventListener('keypress', (e) => {
-                if (e.key === 'Enter') {
-                    e.preventDefault();
-                    if(btnConfirm) btnConfirm.click();
-                }
-            });
-        }
-
-        // 2. Click sul tasto conferma
-        if (btnConfirm && inpWord) {
-            btnConfirm.onclick = () => {
-                const word = inpWord.value.toUpperCase().replace(/[^A-Z]/g, '');
-                if (!word) return;
-
-                const rawBoard = state.board.letters || state.board.cards || state.board || state.letters || [];
-                const available = rawBoard
-                    .map(l => {
-                        if (!l) return '';
-                        let c = (typeof l === 'object') ? (l.char || l.letter || l.lettera || l.val || '') : l;
-                        return c.toString().toUpperCase().replace(/[^A-Z]/g, '');
-                    })
-                    .filter(char => char.length === 1);
-                    
-                // LOG DI DEBUG (visibile premendo F12)
-                console.log("Lettere valide trovate sul tavolo:", available);
-                console.log("Lunghezza parola:", word.length, "Lunghezza tavolo:", available.length);
-
-                let temp = [...available];
-                let isValid = true;
-                let score = 0;
-                const dictionary = config.letters[state.lang] || config.letters['IT'] || [];
-
-                for (let c of word) {
-                    const idx = temp.indexOf(c);
-                    if (idx > -1) {
-                        const letterDef = dictionary.find(l => (l.char || l.letter || '').toString().toUpperCase().replace(/[^A-Z]/g, '') === c);
-                        score += letterDef ? (letterDef.points !== undefined ? letterDef.points : (letterDef.value || 0)) : 0;
-                        temp.splice(idx, 1);
-                    } else {
-                        isValid = false;
-                        break;
-                    }
-                }
-
-                if (!isValid) {
-                    alert("Lettere mancanti sul tabellone!");
-                    return;
-                }
-
-                // APPLICA RADDOPPIO
-                if (word.length === available.length) {
-                    console.log("RADDOPPIO APPLICATO!");
-                    score *= 2;
-                }
-
-                // SALVATAGGIO
-                state.players[state.tempCorrectionIndex].score += score;
-                state.tempCorrectionIndex = null;
-                state.save();
+            if (inpWord) {
+                inpWord.addEventListener('input', updateCorrectionLive);
                 
-                const modal = document.getElementById('modal-correction');
-                if (modal) modal.classList.add('hidden');
-                render();
-            };
-        }
+                inpWord.addEventListener('keypress', (e) => {
+                    if (e.key === 'Enter') {
+                        e.preventDefault();
+                        if (btnConfirm) btnConfirm.click();
+                    }
+                });
+            }
+
+            if (btnConfirm) {
+                btnConfirm.onclick = () => {
+                    const errDiv = document.getElementById('word-error');
+                    if (errDiv && !errDiv.classList.contains('hidden')) {
+                        alert(t.errNoLetters || "Lettere mancanti sul tabellone!");
+                        return;
+                    }
+
+                    // Recuperiamo il punteggio finale (già raddoppiato se c'è il bonus) dallo schermo
+                    const displayScore = document.getElementById('display-score');
+                    let finalScore = 0;
+                    if (displayScore && displayScore.dataset.score) {
+                        finalScore = parseInt(displayScore.dataset.score) || 0;
+                    }
+
+                    // Salviamo i punti
+                    const p = state.players[state.tempCorrectionIndex];
+                    p.currentRoundPoints = finalScore;
+                    p.totalScore += finalScore;
+                    
+                    state.tempCorrectionIndex++;
+                    if(state.tempCorrectionIndex >= state.players.length) {
+                        state.turn.phase = 'SUMMARY';
+                        state.save();
+                        render();
+                    } else {
+                        state.save();
+                        render(); // Passa al prossimo giocatore
+                    }
+                };
+            }
             
             //const btnYes = document.getElementById('btn-valid-yes');
             //const btnNo = document.getElementById('btn-valid-no');
