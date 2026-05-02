@@ -741,7 +741,6 @@
             if (!input || !displayScore) return;
 
             const word = input.value.toUpperCase().replace(/[^A-Z]/g, '');
-            // Prendiamo le lettere e i punti direttamente dal tavolo!
             const boardLetters = state.board.letters || [];
             
             let tempBoard = [...boardLetters];
@@ -761,7 +760,6 @@
                 }
             }
 
-            // RADDOPPIO
             const isAllLettersUsed = isValid && word.length > 0 && word.length === boardLetters.length;
             
             if (isValid) {
@@ -770,17 +768,17 @@
                     const finalScore = totalScore * 2;
                     displayScore.innerHTML = `${finalScore} <span style="font-size: 0.6em; color: var(--warning); font-weight: bold;">(x2 BONUS!)</span>`;
                     displayScore.style.color = 'var(--warning)';
-                    displayScore.dataset.score = finalScore; // Salviamo il calcolo per il tasto "Conferma"
+                    displayScore.setAttribute('data-current-calc', finalScore); // Salvataggio sicuro del valore
                 } else {
                     displayScore.innerText = totalScore;
                     displayScore.style.color = 'var(--accent-color)';
-                    displayScore.dataset.score = totalScore;
+                    displayScore.setAttribute('data-current-calc', totalScore);
                 }
             } else {
                 errorDiv.classList.remove('hidden');
                 displayScore.innerText = '0';
                 displayScore.style.color = 'var(--danger)';
-                displayScore.dataset.score = 0;
+                displayScore.setAttribute('data-current-calc', 0);
             }
         }
         
@@ -898,48 +896,47 @@
             };
 
            // Correction Logic
+            // === LOGICA DI CORREZIONE E SALVATAGGIO PUNTI ===
             const inpWord = document.getElementById('input-word');
             const btnConfirm = document.getElementById('btn-confirm-score');
+            const modalCorrection = document.getElementById('modal-correction');
 
             if (inpWord) {
-                inpWord.addEventListener('input', updateCorrectionLive);
-                
-                inpWord.addEventListener('keypress', (e) => {
+                // Rimuove vecchi eventi per evitare doppie chiamate
+                inpWord.oninput = updateCorrectionLive;
+                inpWord.onkeypress = (e) => {
                     if (e.key === 'Enter') {
                         e.preventDefault();
                         if (btnConfirm) btnConfirm.click();
                     }
-                });
+                };
             }
 
             if (btnConfirm) {
                 btnConfirm.onclick = () => {
-                    const errDiv = document.getElementById('word-error');
-                    if (errDiv && !errDiv.classList.contains('hidden')) {
-                        alert(t.errNoLetters || "Lettere mancanti sul tabellone!");
-                        return;
-                    }
-
-                    // Recuperiamo il punteggio finale (già raddoppiato se c'è il bonus) dallo schermo
                     const displayScore = document.getElementById('display-score');
-                    let finalScore = 0;
-                    if (displayScore && displayScore.dataset.score) {
-                        finalScore = parseInt(displayScore.dataset.score) || 0;
-                    }
-
-                    // Salviamo i punti
+                    const finalScore = parseInt(displayScore.getAttribute('data-current-calc')) || 0;
+                    
+                    // 1. Assegna i punti al giocatore corrente
                     const p = state.players[state.tempCorrectionIndex];
                     p.currentRoundPoints = finalScore;
                     p.totalScore += finalScore;
-                    
+
+                    // 2. Passa al prossimo giocatore o finisci
                     state.tempCorrectionIndex++;
-                    if(state.tempCorrectionIndex >= state.players.length) {
+                    
+                    if (state.tempCorrectionIndex >= state.players.length) {
+                        // Fine della correzione per tutti
                         state.turn.phase = 'SUMMARY';
+                        if (modalCorrection) modalCorrection.classList.add('hidden');
                         state.save();
                         render();
                     } else {
+                        // Prossimo giocatore: resetta il campo testo e aggiorna il nome nel modal
+                        if (inpWord) inpWord.value = '';
+                        updateCorrectionLive(); 
                         state.save();
-                        render(); // Passa al prossimo giocatore
+                        render(); 
                     }
                 };
             }
