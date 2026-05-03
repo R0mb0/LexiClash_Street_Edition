@@ -766,9 +766,10 @@
                 errorDiv.classList.add('hidden');
                 if (isAllLettersUsed) {
                     const finalScore = totalScore * 2;
+                    // MOSTRA finalScore (raddoppiato) invece di totalScore
                     displayScore.innerHTML = `${finalScore} <span style="font-size: 0.6em; color: var(--warning); font-weight: bold;">(x2 BONUS!)</span>`;
                     displayScore.style.color = 'var(--warning)';
-                    displayScore.setAttribute('data-current-calc', finalScore); // Salvataggio sicuro del valore
+                    displayScore.setAttribute('data-current-calc', finalScore);
                 } else {
                     displayScore.innerText = totalScore;
                     displayScore.style.color = 'var(--accent-color)';
@@ -912,27 +913,27 @@
                 };
             }
 
-            if (btnConfirm) {
+            if (btnConfirm) {if (btnConfirm) {
                 btnConfirm.onclick = () => {
                     const displayScore = document.getElementById('display-score');
+                    // Leggiamo il valore calcolato (che include il raddoppio)
                     const finalScore = parseInt(displayScore.getAttribute('data-current-calc')) || 0;
                     
-                    // 1. Assegna i punti al giocatore corrente
+                    // Assegna i punti al giocatore
                     const p = state.players[state.tempCorrectionIndex];
                     p.currentRoundPoints = finalScore;
                     p.totalScore += finalScore;
 
-                    // 2. Passa al prossimo giocatore o finisci
+                    // Passa al prossimo o finisci
                     state.tempCorrectionIndex++;
                     
                     if (state.tempCorrectionIndex >= state.players.length) {
-                        // Fine della correzione per tutti
                         state.turn.phase = 'SUMMARY';
                         if (modalCorrection) modalCorrection.classList.add('hidden');
                         state.save();
                         render();
                     } else {
-                        // Prossimo giocatore: resetta il campo testo e aggiorna il nome nel modal
+                        // Reset per il prossimo giocatore
                         if (inpWord) inpWord.value = '';
                         updateCorrectionLive(); 
                         state.save();
