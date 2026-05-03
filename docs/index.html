@@ -733,7 +733,7 @@
             return layout;
         }
 
-        function updateCorrectionLive() {
+       function updateCorrectionLive() {
             const input = document.getElementById('input-word');
             const displayScore = document.getElementById('display-score');
             const errorDiv = document.getElementById('word-error');
@@ -763,21 +763,26 @@
             const isAllLettersUsed = isValid && word.length > 0 && word.length === boardLetters.length;
             
             if (isValid) {
-                errorDiv.classList.add('hidden');
+                if(errorDiv) errorDiv.classList.add('hidden');
+                
                 if (isAllLettersUsed) {
-                    const finalScore = totalScore * 2;
-                    // MOSTRA finalScore (raddoppiato) invece di totalScore
-                    displayScore.innerHTML = `${finalScore} <span style="font-size: 0.6em; color: var(--warning); font-weight: bold;">(x2 BONUS!)</span>`;
+                    // === LA CORREZIONE È QUI ===
+                    const doubledScore = totalScore * 2; // Calcoliamo prima il doppio!
+                    
+                    // Ora stampiamo a schermo il numero RADDOPPIATO (es: 20)
+                    displayScore.innerHTML = `${doubledScore} <span style="font-size: 0.5em; color: var(--warning); font-weight: bold;">(x2 BONUS!)</span>`;
                     displayScore.style.color = 'var(--warning)';
-                    displayScore.setAttribute('data-current-calc', finalScore);
+                    
+                    // E lo salviamo per la fase successiva
+                    displayScore.setAttribute('data-current-calc', doubledScore); 
                 } else {
-                    displayScore.innerText = totalScore;
+                    displayScore.innerHTML = totalScore;
                     displayScore.style.color = 'var(--accent-color)';
                     displayScore.setAttribute('data-current-calc', totalScore);
                 }
             } else {
-                errorDiv.classList.remove('hidden');
-                displayScore.innerText = '0';
+                if(errorDiv) errorDiv.classList.remove('hidden');
+                displayScore.innerHTML = '0';
                 displayScore.style.color = 'var(--danger)';
                 displayScore.setAttribute('data-current-calc', 0);
             }
