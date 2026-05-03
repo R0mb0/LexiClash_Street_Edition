@@ -950,63 +950,48 @@
             const dispScore = document.getElementById('display-score');
             const errDiv = document.getElementById('word-error');
             
-            let currentCalculatedScore = 0;
-            //let isValidToggle = true;
+           const inpWord = document.getElementById('input-word');
+        const btnConfirm = document.getElementById('btn-confirm-score');
 
-           if (inpWord) {
-                inpWord.addEventListener('input', () => {
-                    const word = inpWord.value.toUpperCase();
-                    let tempBoard = [...state.board.letters];
-                    let score = 0;
-                    let error = false;
-
-                    for (let char of word) {
-                        if (char === ' ') continue;
-                        
-                        let idx = tempBoard.findIndex(l => l.letter === char || l.char === char);
-                        
-                        if (idx !== -1) {
-                            score += tempBoard[idx].value;
-                            tempBoard.splice(idx, 1);
-                        } else {
-                            error = true; 
-                            break;
-                        }
-                    }
-
-                    if (error) {
-                        errDiv.classList.remove('hidden');
-                        currentCalculatedScore = 0;
-                    } else {
-                        errDiv.classList.add('hidden');
-                        currentCalculatedScore = score; 
-                    }
-                    
-                    if (dispScore) dispScore.innerText = currentCalculatedScore;
-                });
-            }
+        if (inpWord) {
+            // L'UNICO e solo calcolo che deve esistere
+            inpWord.oninput = updateCorrectionLive;
             
-            if(inpWord) inpWord.oninput = updateCorrectionLive;
-            //if(btnYes) btnYes.onclick = () => { isValidToggle=true; btnYes.style.opacity=1; btnNo.style.opacity=0.5; updateCorrectionLive(); };
-            //if(btnNo) btnNo.onclick = () => { isValidToggle=false; btnNo.style.opacity=1; btnYes.style.opacity=0.5; updateCorrectionLive(); };
-            
-            if(btnConfirm) {
-                btnConfirm.onclick = () => {
-                    const p = state.players[state.tempCorrectionIndex];
-                    p.currentRoundPoints = currentCalculatedScore;
-                    p.totalScore += currentCalculatedScore;
-                    
-                    state.tempCorrectionIndex++;
-                    if(state.tempCorrectionIndex >= state.players.length) {
-                        state.turn.phase = 'SUMMARY';
-                        state.save();
-                        render();
-                    } else {
-                        state.save();
-                        render(); // render next player correction modal
-                    }
-                };
-            }
+            // Permette l'invio col tasto Enter
+            inpWord.onkeypress = (e) => {
+                if (e.key === 'Enter') {
+                    e.preventDefault();
+                    if (btnConfirm) btnConfirm.click();
+                }
+            };
+        }
+
+        if (btnConfirm) {
+            btnConfirm.onclick = () => {
+                const errDiv = document.getElementById('word-error');
+                if (errDiv && !errDiv.classList.contains('hidden')) {
+                    return; // Blocca se la parola è sbagliata
+                }
+
+                // Legge il punteggio dalla nostra funzione perfetta e lo trasforma in numero
+                const displayScore = document.getElementById('display-score');
+                const finalScore = parseInt(displayScore.getAttribute('data-current-calc')) || 0;
+                
+                // Salva i punti reali
+                const p = state.players[state.tempCorrectionIndex];
+                p.currentRoundPoints = finalScore;
+                p.totalScore += finalScore;
+
+                // Passa al prossimo giocatore
+                state.tempCorrectionIndex++;
+                if(state.tempCorrectionIndex >= state.players.length) {
+                    state.turn.phase = 'SUMMARY';
+                }
+                
+                state.save();
+                render(); 
+            };
+        }
 
             // Summary / Next Round
             const btnNextR = document.getElementById('btn-next-round');
