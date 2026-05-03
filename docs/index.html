@@ -898,51 +898,47 @@
 
            // === BINDING CORRETTO PER IL RADDOPPIO ===
                 const inpWord = document.getElementById('input-word');
-                const btnConfirm = document.getElementById('btn-confirm-score');
+        const btnConfirm = document.getElementById('btn-confirm-score');
 
-                if (inpWord) {
-                    // Collega la funzione di calcolo globale (che contiene la magia del x2)
-                    inpWord.oninput = updateCorrectionLive;
-                    
-                    // Permette l'invio comodo col tasto Enter
-                    inpWord.onkeypress = (e) => {
-                        if (e.key === 'Enter') {
-                            e.preventDefault();
-                            if (btnConfirm) btnConfirm.click();
-                        }
-                    };
+        if (inpWord) {
+            // 1. Unico calcolo affidato alla nostra funzione sicura
+            inpWord.oninput = updateCorrectionLive;
+            
+            // 2. Tasto invio rapido
+            inpWord.onkeypress = (e) => {
+                if (e.key === 'Enter') {
+                    e.preventDefault();
+                    if (btnConfirm) btnConfirm.click();
+                }
+            };
+        }
+
+        if (btnConfirm) {
+            btnConfirm.onclick = () => {
+                const errDiv = document.getElementById('word-error');
+                if (errDiv && !errDiv.classList.contains('hidden')) {
+                    return; // Blocca se le lettere sono errate
                 }
 
-                if (btnConfirm) {
-                    btnConfirm.onclick = () => {
-                        const errDiv = document.getElementById('word-error');
-                        if (errDiv && !errDiv.classList.contains('hidden')) {
-                            // Se c'è un errore (es. lettere mancanti), blocca il salvataggio
-                            return; 
-                        }
+                // 3. Legge il numero finale dalla UI (già calcolato con o senza x2)
+                const displayScore = document.getElementById('display-score');
+                const finalScore = parseInt(displayScore.getAttribute('data-current-calc')) || 0;
+                
+                // 4. Salva i punti nel tabellone del giocatore
+                const p = state.players[state.tempCorrectionIndex];
+                p.currentRoundPoints = finalScore;
+                p.totalScore += finalScore;
 
-                        // Prendi il punteggio FINALE (già raddoppiato se c'è il bonus)
-                        const displayScore = document.getElementById('display-score');
-                        const finalScore = parseInt(displayScore.getAttribute('data-current-calc')) || 0;
-                        
-                        // 1. Assegna i punti al giocatore corrente
-                        const p = state.players[state.tempCorrectionIndex];
-                        p.currentRoundPoints = finalScore;
-                        p.totalScore += finalScore;
-
-                        // 2. Passa al prossimo giocatore o chiudi il turno
-                        state.tempCorrectionIndex++;
-                        
-                        if (state.tempCorrectionIndex >= state.players.length) {
-                            state.turn.phase = 'SUMMARY';
-                            state.save();
-                            render();
-                        } else {
-                            state.save();
-                            render(); 
-                        }
-                    };
+                // 5. Passa al prossimo giocatore
+                state.tempCorrectionIndex++;
+                if (state.tempCorrectionIndex >= state.players.length) {
+                    state.turn.phase = 'SUMMARY';
                 }
+                
+                state.save();
+                render(); 
+            };
+        }
             
             //const btnYes = document.getElementById('btn-valid-yes');
             //const btnNo = document.getElementById('btn-valid-no');
