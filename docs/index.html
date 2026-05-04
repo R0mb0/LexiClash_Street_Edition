@@ -329,18 +329,21 @@
         
         /* Stile per il pulsante Termina in alto a destra */
         .btn-quit {
-            padding: 6px 12px;
-            font-size: 0.8rem;
+            padding: 0.6rem 1.2rem; /* Aumentato per coerenza */
+            font-size: 0.9rem;      /* Leggermente più grande */
             background: rgba(239, 68, 68, 0.1);
             color: var(--danger);
             border: 1px solid var(--danger);
-            border-radius: 8px;
+            border-radius: 10px;    /* Arrotondato come gli altri */
             cursor: pointer;
+            font-weight: 700;
             transition: all 0.2s;
+            white-space: nowrap;    /* Impedisce al testo di andare a capo */
         }
         .btn-quit:hover {
             background: var(--danger);
             color: white;
+            transform: translateY(-2px); /* Effetto movimento degli altri tasti */
         }
     </style>
 </head>
