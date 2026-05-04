@@ -344,6 +344,28 @@
             color: white;
             transform: translateY(-2px); /* Effetto movimento degli altri tasti */
         }
+
+        .btn-back {
+            padding: 0.6rem 1.2rem;
+            font-size: 0.9rem;
+            background: rgba(100, 116, 139, 0.1); /* var(--secondary) con opacità */
+            color: var(--secondary);
+            border: 1px solid var(--secondary);
+            border-radius: 10px;
+            cursor: pointer;
+            font-weight: 700;
+            transition: all 0.2s;
+            white-space: nowrap;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+        }
+        .btn-back:hover {
+            background: var(--secondary);
+            color: white;
+            transform: translateY(-2px);
+        }
     </style>
 </head>
 <body>
@@ -652,7 +674,7 @@
                     </div>
                     <div class="flex-center mt-8">
                         <button id="btn-add-player" class="btn-primary">${t.addPlayer}</button>
-                        <button class="btn-outline" onclick="state.turn.phase='INIT'; render();">${t.back}</button>
+                        <button class="btn-back" onclick="state.turn.phase='INIT'; render();"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m12 19-7-7 7-7"/><path d="M19 12H5"/></svg>${t.back}</button>
                         <button id="btn-next-reg" class="btn-success">${t.next} ➔</button>
                     </div>
                 </div>
