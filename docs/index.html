@@ -653,7 +653,7 @@
                     </div>
                     <div class="flex-center mt-8">
                         <button id="btn-add-player" class="btn-primary">${t.addPlayer}</button>
-                        <button class="btn-secondary" style="flex:1" onclick="state.turn.phase='HOME'; render();">${t('back')}</button>
+                        <button class="btn-outline" onclick="state.turn.phase='INIT'; render();">${t.back}</button>
                         <button id="btn-next-reg" class="btn-success">${t.next} ➔</button>
                     </div>
                 </div>
@@ -677,7 +677,7 @@
                         <label><b>${t.ruleToggle}</b></label>
                         <select id="sel-rule" class="mt-4">
                             <option value="frizzy" ${state.settings.rule==='frizzy'?'selected':''}>${t.ruleFrizzy}</option>
-                            button class="btn-secondary" style="flex:1" onclick="state.turn.phase='SETUP'; render();">${t('back')}</button>
+                            <button class="btn-outline" onclick="state.turn.phase='REGISTRATION'; render();">${t.back}</button>
                             <option value="chaos" ${state.settings.rule==='chaos'?'selected':''}>${t.ruleChaos}</option>
                         </select>
                     </div>
@@ -744,7 +744,7 @@
                             <div class="flex-center mt-4 controls-area">
                                 <button id="btn-buy" class="btn-danger">${t.buyExtra}</button>
                                 ${canStart ? `<button id="btn-start-timer" class="btn-success text-2xl" style="animation: pulse-glow 2s infinite;">${t.startTimer}</button>` : ''}
-                                ${state.turn.phase !== 'HOME' && state.turn.phase !== 'SETUP' && state.turn.phase !== 'SETTINGS' ? `<button class="btn-quit" onclick="resetToHome()">${t('quit')}</button>` : ''}
+                                ${state.turn.phase !== 'INIT' && state.turn.phase !== 'REGISTRATION' && state.turn.phase !== 'SETTINGS' ? `<button class="btn-quit" onclick="resetToHome()">${t.quit}</button>` : ''}
                             </div>
                         ` : ''}
                     </main>
