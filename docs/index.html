@@ -742,7 +742,8 @@
                             </div>
                             <div class="flex-center mt-4 controls-area">
                                 <button id="btn-buy" class="btn-danger">${t.buyExtra}</button>
-                                ${canStart ? `<button id="btn-start-timer" class="btn-success text-2xl" style="animation: pulse-glow 2s infinite;">${t.startTimer}</button>` : ''}`<button class="btn-quit" onclick="resetToHome('${t.confirmQuit}')">${t.quit}</button>`
+                                ${canStart ? `<button id="btn-start-timer" class="btn-success text-2xl" style="animation: pulse-glow 2s infinite;">${t.startTimer}</button>` : ''}
+                                ${(state.turn.phase !== 'INIT' && state.turn.phase !== 'REGISTRATION' && state.turn.phase !== 'SETTINGS') ? `<button class="btn-quit" onclick="resetToHome('${t.confirmQuit}')">${t.quit}</button>` : ''}
                             </div>
                         ` : ''}
                     </main>
