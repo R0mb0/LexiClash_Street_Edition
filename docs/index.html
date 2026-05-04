@@ -306,6 +306,42 @@
             box-shadow: 0 0 25px var(--warning) !important;
             transform: translateY(-2px);
         }
+
+        .btn-secondary {
+            background-color: transparent;
+            color: var(--secondary);
+            border: 2px solid var(--secondary);
+            padding: 0.8rem 1.5rem;
+            border-radius: 12px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+        }
+        
+        .btn-secondary:hover {
+            background-color: var(--secondary);
+            color: white;
+        }
+        
+        /* Stile per il pulsante Termina in alto a destra */
+        .btn-quit {
+            padding: 6px 12px;
+            font-size: 0.8rem;
+            background: rgba(239, 68, 68, 0.1);
+            color: var(--danger);
+            border: 1px solid var(--danger);
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        .btn-quit:hover {
+            background: var(--danger);
+            color: white;
+        }
     </style>
 </head>
 <body>
@@ -360,7 +396,10 @@
                 enter_word: "Inserisci la parola composta:",
                 invalid_word: "Lettere non disponibili o non valide!",
                 score_est: "Punteggio stimato:",
-                confirm_word: "CONFERMA PAROLA"
+                confirm_word: "CONFERMA PAROLA",
+                back: "Indietro",
+                quit: "Termina",
+                confirmQuit: "Vuoi terminare la partita? I progressi andranno persi."
             },
             en: {
                 title: "LexiClash: Street Edition",
@@ -404,7 +443,10 @@
                 enter_word: "Enter the word composed:",
                 invalid_word: "Letters not available or invalid!",
                 score_est: "Estimated Score:",
-                confirm_word: "CONFIRM WORD"
+                confirm_word: "CONFIRM WORD",
+                back: "Back",
+                quit: "Quit",
+                confirmQuit: "Do you want to end the game? Progress will be lost."
             }
         };
 
@@ -541,6 +583,25 @@
         // ==========================================
         const appDiv = document.getElementById('app-container');
 
+        function resetToHome() {
+            if (state.turn.phase !== 'HOME' && state.turn.phase !== 'SETUP') {
+                if (!confirm(t('confirmQuit'))) return;
+            }
+            
+            // Reset dello stato mantenendo solo lingua e impostazioni base se desiderato
+            state.players = [];
+            state.turn = {
+                phase: 'HOME',
+                currentPlayerIndex: 0,
+                round: 1
+            };
+            state.board = { letters: [], timestamp: null };
+            state.tempCorrectionIndex = 0;
+            
+            state.save();
+            render();
+        }
+
         function render() {
             switch(state.turn.phase) {
                 case 'INIT': appDiv.innerHTML = viewInit(); break;
@@ -590,6 +651,7 @@
                     </div>
                     <div class="flex-center mt-8">
                         <button id="btn-add-player" class="btn-primary">${t.addPlayer}</button>
+                        <button class="btn-secondary" style="flex:1" onclick="state.turn.phase='HOME'; render();">${t('back')}</button>
                         <button id="btn-next-reg" class="btn-success">${t.next} ➔</button>
                     </div>
                 </div>
@@ -613,6 +675,7 @@
                         <label><b>${t.ruleToggle}</b></label>
                         <select id="sel-rule" class="mt-4">
                             <option value="frizzy" ${state.settings.rule==='frizzy'?'selected':''}>${t.ruleFrizzy}</option>
+                            button class="btn-secondary" style="flex:1" onclick="state.turn.phase='SETUP'; render();">${t('back')}</button>
                             <option value="chaos" ${state.settings.rule==='chaos'?'selected':''}>${t.ruleChaos}</option>
                         </select>
                     </div>
@@ -679,6 +742,7 @@
                             <div class="flex-center mt-4 controls-area">
                                 <button id="btn-buy" class="btn-danger">${t.buyExtra}</button>
                                 ${canStart ? `<button id="btn-start-timer" class="btn-success text-2xl" style="animation: pulse-glow 2s infinite;">${t.startTimer}</button>` : ''}
+                                ${state.turn.phase !== 'HOME' && state.turn.phase !== 'SETUP' && state.turn.phase !== 'SETTINGS' ? `<button class="btn-quit" onclick="resetToHome()">${t('quit')}</button>` : ''}
                             </div>
                         ` : ''}
                     </main>
