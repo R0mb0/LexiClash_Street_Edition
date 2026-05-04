@@ -698,11 +698,11 @@
                         <label><b>${t.ruleToggle}</b></label>
                         <select id="sel-rule" class="mt-4">
                             <option value="frizzy" ${state.settings.rule==='frizzy'?'selected':''}>${t.ruleFrizzy}</option>
-                            <button class="btn-outline" onclick="state.turn.phase='REGISTRATION'; render();">${t.back}</button>
                             <option value="chaos" ${state.settings.rule==='chaos'?'selected':''}>${t.ruleChaos}</option>
                         </select>
                     </div>
                     <button id="btn-start-game" class="btn-success w-full text-2xl" style="margin-top: 2rem;">${t.start}</button>
+                    <button class="btn-outline" onclick="state.turn.phase='REGISTRATION'; render();">${t.back}</button>
                 </div>
             `;
         }
