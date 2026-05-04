@@ -585,27 +585,24 @@
         // ==========================================
         const appDiv = document.getElementById('app-container');
 
-        function resetToHome() {
-    // Richiama l'oggetto traduzione per questa funzione
-    const t = translations[state.lang] || translations['it']; 
-    
-    if (state.turn.phase !== 'INIT' && state.turn.phase !== 'REGISTRATION' && state.turn.phase !== 'SETTINGS') {
-        if (!confirm(t.confirmQuit)) return;
-    }
-    
-    // Reset dello stato
-    state.players = [];
-    state.turn = {
-        phase: 'INIT',
-        currentPlayerIndex: 0,
-        round: 1
-    };
-    state.board = { letters: [], timestamp: null };
-    state.tempCorrectionIndex = 0;
-    
-    state.save();
-    render();
-}
+       function resetToHome(confirmMsg) {
+            if (state.turn.phase !== 'INIT' && state.turn.phase !== 'REGISTRATION' && state.turn.phase !== 'SETTINGS') {
+                // Usa il messaggio che le viene passato dal pulsante
+                if (!confirm(confirmMsg)) return; 
+            }
+            
+            state.players = [];
+            state.turn = {
+                phase: 'INIT',
+                currentPlayerIndex: 0,
+                round: 1
+            };
+            state.board = { letters: [], timestamp: null };
+            state.tempCorrectionIndex = 0;
+            
+            state.save();
+            render();
+        }
         function render() {
             switch(state.turn.phase) {
                 case 'INIT': appDiv.innerHTML = viewInit(); break;
@@ -745,8 +742,7 @@
                             </div>
                             <div class="flex-center mt-4 controls-area">
                                 <button id="btn-buy" class="btn-danger">${t.buyExtra}</button>
-                                ${canStart ? `<button id="btn-start-timer" class="btn-success text-2xl" style="animation: pulse-glow 2s infinite;">${t.startTimer}</button>` : ''}
-                                ${(state.turn.phase !== 'INIT' && state.turn.phase !== 'REGISTRATION' && state.turn.phase !== 'SETTINGS') ? `<button class="btn-quit" onclick="resetToHome()">${translations[state.lang].quit}</button>` : ''}
+                                ${canStart ? `<button id="btn-start-timer" class="btn-success text-2xl" style="animation: pulse-glow 2s infinite;">${t.startTimer}</button>` : ''}`<button class="btn-quit" onclick="resetToHome('${t.confirmQuit}')">${t.quit}</button>`
                             </div>
                         ` : ''}
                     </main>
