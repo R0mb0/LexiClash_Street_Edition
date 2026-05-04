@@ -584,24 +584,26 @@
         const appDiv = document.getElementById('app-container');
 
         function resetToHome() {
-            if (state.turn.phase !== 'HOME' && state.turn.phase !== 'SETUP') {
-                if (!confirm(t('confirmQuit'))) return;
-            }
-            
-            // Reset dello stato mantenendo solo lingua e impostazioni base se desiderato
-            state.players = [];
-            state.turn = {
-                phase: 'HOME',
-                currentPlayerIndex: 0,
-                round: 1
-            };
-            state.board = { letters: [], timestamp: null };
-            state.tempCorrectionIndex = 0;
-            
-            state.save();
-            render();
-        }
-
+    // Richiama l'oggetto traduzione per questa funzione
+    const t = translations[state.lang] || translations['it']; 
+    
+    if (state.turn.phase !== 'INIT' && state.turn.phase !== 'REGISTRATION' && state.turn.phase !== 'SETTINGS') {
+        if (!confirm(t.confirmQuit)) return;
+    }
+    
+    // Reset dello stato
+    state.players = [];
+    state.turn = {
+        phase: 'INIT',
+        currentPlayerIndex: 0,
+        round: 1
+    };
+    state.board = { letters: [], timestamp: null };
+    state.tempCorrectionIndex = 0;
+    
+    state.save();
+    render();
+}
         function render() {
             switch(state.turn.phase) {
                 case 'INIT': appDiv.innerHTML = viewInit(); break;
