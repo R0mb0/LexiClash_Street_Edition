@@ -327,8 +327,7 @@
             color: white;
         }
         
-        /* Stile per il pulsante Termina in alto a destra */
-        .btn-quit {
+       .btn-quit {
             padding: 0.6rem 1.2rem; /* Aumentato per coerenza */
             font-size: 0.9rem;      /* Leggermente più grande */
             background: rgba(239, 68, 68, 0.1);
@@ -747,7 +746,7 @@
                             <div class="flex-center mt-4 controls-area">
                                 <button id="btn-buy" class="btn-danger">${t.buyExtra}</button>
                                 ${canStart ? `<button id="btn-start-timer" class="btn-success text-2xl" style="animation: pulse-glow 2s infinite;">${t.startTimer}</button>` : ''}
-                                ${state.turn.phase !== 'INIT' && state.turn.phase !== 'REGISTRATION' && state.turn.phase !== 'SETTINGS' ? `<button class="btn-quit" onclick="resetToHome()">${t.quit}</button>` : ''}
+                                ${(state.turn.phase !== 'INIT' && state.turn.phase !== 'REGISTRATION' && state.turn.phase !== 'SETTINGS') ? `<button class="btn-quit" onclick="resetToHome()">${translations[state.lang].quit}</button>` : ''}
                             </div>
                         ` : ''}
                     </main>
